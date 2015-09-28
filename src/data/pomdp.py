@@ -17,41 +17,39 @@ class pomdp:
     L = None
     M = None
     
+    def initProduct(self,L,M,O=[],Z={}):
+
+        self.A = L.A
+        self.O = O
+        self.Z = Z
+
+        # cartesian product of states
+        self.S = list(it.product(L.S,M.S))
+
+        # transition function
+        for k1 in it.product(L.S,M.T.keys()):
+            newk = ((k1[0],k1[1][0]),k1[1][1])
+            if k1[1] in M.T:
+                self.T[newk] = {}
+                for k2 in M.T[k1[1]].keys():
+                    if (k1[0],k1[1][1]) in L.T:
+                        self.T[newk][(L.T[(k1[0],k1[1][1])],k2)] = \
+                        M.T[k1[1]][k2]
+
     def __init__(self, S=[], A=[], T={}, O=[], Z={}):
         self.S = S
         self.A = A
         self.T = T
         self.O = O
         self.Z = Z
-    
-    def initProduct(self,L,M,O=[],Z={}):
-        # cartesian product of states
-        for s in it.product(L.S, M.S):
-            self.S.append(s)
-        self.A = L.A
-        for s1,a,s2 in it.product(self.S,self.A,self.S):
-            print s1,a,s2
-            if L.T[(s1[0],a)] == s2[0]:
-                if (s1,a) not in self.T.keys():
-                    self.T[(s1,a)] = {}
-                self.T[(s1,a)][s2] = M.T[(s1[1],a)][s2[1]]
         
-        #for s1 in self.S:
-        #    for a in self.A:
-        #        distr = []
-        #        for s2 in self.S:
-        #            if L.T[(s1[0],a)] == s2[0]:
-        #                distr.append(M.T[(s1[1],a)][s2[1]])
-        #            else:
-        #                distr.append(0)
-        #        self.T[(s1,a)] = distr
-        self.O = O
-        self.Z = Z
-
     def __str__(self):
         ret = 'S\n'+str(self.S)+'\nA\n'+str(self.A)+'\nT\n'
         for k in self.T:
             ret = ret + str(k) + ':' + str(self.T[k]) + '\n'
+        ret = ret + 'O\n' + str(self.O) + '\nZ\n'
+        for k in self.Z:
+            ret = ret + str(k) + ':' + str(self.Z[k]) + '\n'
         return ret
 
 if __name__ == '__main__':

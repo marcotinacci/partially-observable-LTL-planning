@@ -14,8 +14,13 @@ class lts:
     def __init__(self, S, A, T):
         self.S = S
         self.A = A
-        self.T = T
-
+        self.T = T    
+            
+    def __str__(self):
+        ret = 'S\n'+str(self.S)+'\nA\n'+str(self.A)+'\nT\n'
+        for k in self.T:
+            ret = ret + str(k) + ':' + str(self.T[k]) + '\n'
+        return ret
 
 if __name__ == "__main__":
     L = lts(

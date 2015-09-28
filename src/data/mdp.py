@@ -6,6 +6,7 @@ Created on Tue Sep  8 11:57:20 2015
 """
 
 import itertools as it
+import time
 
 class mdp:
     
@@ -17,18 +18,25 @@ class mdp:
         self.S = S
         self.A = A
         self.T = T
-        
+    
     def initImplicit(self, P):
+        print "INIT IMPLICIT MDP"
+        start = time.time()
         self.S = list(it.product(P.S, P.O))
         self.A = P.A
         for s1 in self.S:
             for a in self.A:
-                distr = {}
-                for s2 in self.S:
-                    if (s1[0],a) in P.T:
-                        distr[s2] = P.T[(s1[0],a)][s2[0]] * P.Z[s2[0]][s2[1]]
-                if distr:
-                    self.T[(s1,a)] = distr
+                if (s1[0],a) in P.T:
+                    distr = {}
+                    for s2 in self.S:
+                        if s2[0] in P.T[(s1[0],a)] and s2[1] in P.Z[s2[0]]:
+                            distr[s2] = P.T[(s1[0],a)][s2[0]] * P.Z[s2[0]][s2[1]]
+                            if distr[s2] == 0:
+                                del distr[s2]
+                    if distr:
+                        self.T[(s1,a)] = distr
+        end = time.time()
+        print "time: "+str(end-start)
     
     def __str__(self):
         ret = 'S\n'+str(self.S)+'\nA\n'+str(self.A)+'\nT\n'
