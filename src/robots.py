@@ -8,11 +8,31 @@ Created on Thu Sep 10 16:10:01 2015
 from data import mdp
 from data import lts
 from data import pomdp
-from data import belief
 import itertools as it
 import time
 
 # === support functions ===
+
+def print_grid(es,dim,pause=False):
+    """ Print the robot arena """
+    # number of robots
+    num = len(es)
+    for i,j in it.product(range(dim),range(dim)):
+        symb = '.'
+        counter = 0
+        for e in range(num):
+            if es[e][0] == i and es[e][1] == j:
+                # main or environment robot
+                symb = 'o' if e == 0 else 'x'
+                counter+=1
+        if counter > 1:
+            symb = str(counter) # multiple robots
+        if j == dim-1: 
+            print symb
+        else:
+            print symb,
+    if pause:
+        pass
 
 def around(s,dim):
     return {(i,j) for i,j in it.product(range(dim),range(dim)) 
@@ -101,6 +121,7 @@ dim = 3
 N = 3
 
 # ==== LTS controller ==== 
+print "-> LTS"
 L = lts.lts(
         ['s0'],
         ['h','n','s','e','w'],
@@ -113,7 +134,9 @@ L = lts.lts(
         }
     )
 
+
 # ==== MDP environment ==== 
+print "-> MDP"
 S = list(it.product(
     it.product(range(dim),range(dim)),
     it.product(range(dim),range(dim)),
@@ -121,7 +144,7 @@ S = list(it.product(
 A = L.A
 K = it.product(S,A)
 
-print "-> TRANSITION FUNCTION GENERATION"
+print "--> TRANSITION FUNCTION GENERATION"
 T = {}
 for s1,a in it.product(S,A):
     ar1 = around(s1[1],dim)
@@ -136,10 +159,11 @@ for s1,a in it.product(S,A):
 M = mdp.mdp(S,A,T)
 
 # ==== POMDP partially observable ====
+print "-> POMDP"
 P = pomdp.pomdp()
-print "-> INIT PRODUCT POMDP"
+print "--> INIT PRODUCT POMDP"
 P.initProduct(L,M)
-print "-> OBSERVATION FUNCTION"
+print "--> OBSERVATION FUNCTION"
 P.O = ['some', 'none']
 P.Z = {}
 for s in P.S:
@@ -148,9 +172,3 @@ for s in P.S:
         or s[1][0] in around(s[1][2],dim) \
         or s[1][0] == s[1][1] or s[1][0] == s[1][2] else 0
     P.Z[s]['none'] = 1 - P.Z[s]['some']
-
-imp = mdp.mdp()
-imp.initImplicit(P)
-
-b = belief.belief(imp,P.Z)
-

@@ -35,8 +35,8 @@ class belief:
     
     def update(self, act=None, obs=None):
         """ Belief update """
-        print "BELIEF UPDATE"
-        start = time.time()
+        #print "BELIEF UPDATE"
+        #start = time.time()
         
         if act and obs: # ACTION AND OBSERVATION UPDATE
             new = {}
@@ -75,5 +75,5 @@ class belief:
         else: # bad call method
             raise ValueError("at least one action or one observation must be present")
 
-        end = time.time()
-        print "time: "+ str(end-start)
+        #end = time.time()
+        #print "time: "+ str(end-start)
