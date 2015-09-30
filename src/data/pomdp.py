@@ -27,14 +27,14 @@ class pomdp:
         self.S = list(it.product(L.S,M.S))
 
         # transition function
-        for k1 in it.product(L.S,M.T.keys()):
-            newk = ((k1[0],k1[1][0]),k1[1][1])
-            if k1[1] in M.T:
-                self.T[newk] = {}
-                for k2 in M.T[k1[1]].keys():
-                    if (k1[0],k1[1][1]) in L.T:
-                        self.T[newk][(L.T[(k1[0],k1[1][1])],k2)] = \
-                        M.T[k1[1]][k2]
+        self.T = {}
+        for ls,(ms,a) in it.product(L.S,M.T.keys()):
+            newk = ((ls,ms),(a))
+            self.T[newk] = {}
+            for ms1,pr in M.T[(ms,a)].iteritems():
+                if (ls,a) in L.T:
+                    newk1 = ((L.T[(ls,a)]),ms1)
+                    self.T[newk][newk1] = pr
 
     def __init__(self, S=[], A=[], T={}, O=[], Z={}):
         self.S = S

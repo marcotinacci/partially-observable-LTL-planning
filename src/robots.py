@@ -9,30 +9,72 @@ from data import mdp
 from data import lts
 from data import pomdp
 import itertools as it
+import random
 import time
 
 # === support functions ===
 
-def print_grid(es,dim,pause=False):
-    """ Print the robot arena """
-    # number of robots
-    num = len(es)
+def opt(ba,prob,P):
+    """
+    Optimality criterion adopted
+        ba: belief state updated with action a
+        prob: precomputed matrix of maximum minimum probabilities
+        P: pomdp model
+    """
+    ret = 0
+    for k,v in ba.d.iteritems():
+        obspr = P.Z[k]['none'] if 'none' in P.Z[k] else 0
+        # specific for the collision-avoidance formula
+        ret += v * obspr * prob[k[0][0]][k[0][1]]
+        #ret = min( ret, v * P.Z[k]['none'] * prob[k[1][0][0]][k[1][0][1]])
+    return ret
+
+def weighted_choice(choices):
+    """ 
+    Weighed extraction
+        choices: discrete distribution dictionary with elements as keys and 
+            probabilities as values (it must be sum 1)
+    """
+    # total = sum(w for c, w in choices) # total is 1
+    r = random.uniform(0, 1)
+    upto = 0
+    for st,pr in choices.iteritems():
+        if upto + pr > r:
+            return st
+        upto += pr
+    assert False, "Shouldn't get here"
+
+def print_grid(ctrl,env,dim,pause=False):
+    """ 
+    Print the robot arena 
+        ctrl: controller robot position
+        env: environment robots positions
+        dim: arena dimension
+        pause: wait for input after print
+    """
+    # number of robots in the environment
+    num = len(env)
     for i,j in it.product(range(dim),range(dim)):
         symb = '.'
         counter = 0
+        if ctrl[0] == i and ctrl[1] == j:
+            # controller robot
+            symb = 'o'
+            counter += 1
         for e in range(num):
-            if es[e][0] == i and es[e][1] == j:
-                # main or environment robot
-                symb = 'o' if e == 0 else 'x'
+            if env[e][0] == i and env[e][1] == j:
+                # environment robot
+                symb = 'x'
                 counter+=1
         if counter > 1:
-            symb = str(counter) # multiple robots
-        if j == dim-1: 
+            # multiple robots
+            symb = str(counter)
+        if j == dim-1:
             print symb
         else:
             print symb,
     if pause:
-        pass
+        raw_input()
 
 def around(s,dim):
     return {(i,j) for i,j in it.product(range(dim),range(dim)) 
@@ -122,41 +164,30 @@ N = 3
 
 # ==== LTS controller ==== 
 print "-> LTS"
-L = lts.lts(
-        ['s0'],
-        ['h','n','s','e','w'],
-        {
-            ('s0','h'): 's0', 
-            ('s0','n'): 's0', 
-            ('s0','e'): 's0', 
-            ('s0','s'): 's0', 
-            ('s0','w'): 's0' 
-        }
-    )
-
+LS = list(it.product(range(dim),range(dim)))
+LA = ['h','n','s','e','w']
+LT = { (s,a):step(s,a,dim) for s,a in it.product(LS,LA) }
+L = lts.lts(LS, LA, LT)
 
 # ==== MDP environment ==== 
 print "-> MDP"
-S = list(it.product(
-    it.product(range(dim),range(dim)),
+MS = list(it.product(
     it.product(range(dim),range(dim)),
     it.product(range(dim),range(dim))))
-A = L.A
-K = it.product(S,A)
 
 print "--> TRANSITION FUNCTION GENERATION"
 T = {}
-for s1,a in it.product(S,A):
-    ar1 = around(s1[1],dim)
-    ar2 = around(s1[2],dim)
+for s1,a in it.product(MS,L.A):
+    ar1 = around(s1[0],dim)
+    ar2 = around(s1[1],dim)
     S2 = it.product(ar1,ar2)
     p = 1.0 / float(len(ar1)) / float(len(ar2))
     T[(s1,a)] = {}
     for s2 in S2:
-        s = (step(s1[0],a,dim),s2[0],s2[1])
+        s = (s2[0],s2[1])
         T[(s1,a)][s] = p
 
-M = mdp.mdp(S,A,T)
+M = mdp.mdp(MS,L.A,T)
 
 # ==== POMDP partially observable ====
 print "-> POMDP"
@@ -168,7 +199,9 @@ P.O = ['some', 'none']
 P.Z = {}
 for s in P.S:
     P.Z[s] = {}
-    P.Z[s]['some'] = 1 if s[1][0] in around(s[1][1],dim) \
-        or s[1][0] in around(s[1][2],dim) \
-        or s[1][0] == s[1][1] or s[1][0] == s[1][2] else 0
-    P.Z[s]['none'] = 1 - P.Z[s]['some']
+    if s[0] in around(s[1][0],dim) or s[0] in around(s[1][1],dim):
+        P.Z[s]['some'] = 1
+    else:
+        P.Z[s]['none'] = 1
+
+print "-> END CS CONFIG"
