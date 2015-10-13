@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Sep  8 11:57:20 2015
-
 @author: Marco Tinacci
 """
 
@@ -10,31 +7,44 @@ import time
 
 class mdp:
     
+    names = {}
+    inv_names = {}
     S = []
     A = []
     T = {}  # T : (S,A) -> distr(S)
     
     def __init__(self, S=[], A=[], T={}):
-        self.S = S
+        self.names = dict(enumerate(S))
+        self.inv_names = {v:k for k,v in self.names.iteritems()}
+        self.S = self.names.keys()
         self.A = A
-        self.T = T
+        self.T = {
+            (self.inv_names[s1],a) : 
+            {self.inv_names[s]:pr for s,pr in s2.iteritems()} 
+                for (s1,a),s2 in T.iteritems()}
     
     def initImplicit(self, P):
         print "INIT IMPLICIT MDP"
         start = time.time()
-        self.S = list(it.product(P.S, P.O))
+        #self.S = list(it.product(P.S, P.O))
+        self.S = [(s,o.keys()[0]) for s,o in P.Z.iteritems()]
+        self.names = dict(enumerate(P.S))
+        self.inv_names = {v:k for k,v in self.names.iteritems()}
         self.A = P.A
-        for s1 in self.S:
-            for a in self.A:
-                if (s1[0],a) in P.T:
-                    distr = {}
-                    for s2 in self.S:
-                        if s2[0] in P.T[(s1[0],a)] and s2[1] in P.Z[s2[0]]:
-                            distr[s2] = P.T[(s1[0],a)][s2[0]] * P.Z[s2[0]][s2[1]]
-                            if distr[s2] == 0:
-                                del distr[s2]
-                    if distr:
-                        self.T[(s1,a)] = distr
+
+        # transition
+        for (s1,a),d in P.T.iteritems():
+            temp = {}
+            # distribution
+            for (s2,pr_st) in d.iteritems():
+                # observation
+                for (o,pr_obs) in P.Z[s2].iteritems():
+                    #print pr_st
+                    temp[(s2,o)] = pr_st * pr_obs
+            # previous observation
+            for o in P.Z[s1]:
+                self.T[((s1,o),a)] = temp
+
         end = time.time()
         print "time: "+str(end-start)
     
@@ -57,3 +67,4 @@ if __name__ == "__main__":
               ('m2','c'): {'m2': 1}
             }
         )
+    print M

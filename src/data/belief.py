@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 @author: Marco Tinacci
 """
 import time
-
-# TODO rendere le chiavi della distribuzione come riferimenti agli stati della struttura
 
 # === STATIC METHODS ===
 def normalize(dist):
@@ -51,10 +48,8 @@ class belief:
         Compute the updated belief on actions and observations received 
         and save it internally
         """
-        #print "BELIEF UPDATE"
-        #start = time.time()
         # new belief distribution
-        if act and obs: # ACTION AND OBSERVATION UPDATE
+        if act != None and obs != None: # ACTION AND OBSERVATION UPDATE
             new = {}
             for s in self.d.keys():
                 for sp,prob in self.M.T[(s,act)].iteritems():
@@ -67,8 +62,7 @@ class belief:
             self.d = new
             normalize(self.d)
             
-        elif act: # ACTION UPDATE
-            # temporary updated ditribution
+        elif act != None: # ACTION UPDATE
             new = {}
             for ls,ms in self.d.keys():
                 for k,v in self.M.T[((ls,ms),(act))].iteritems():
@@ -77,14 +71,12 @@ class belief:
                         new[k] = self.d[(ls,ms)] * v
                     else:
                         new[k] += self.d[(ls,ms)] * v
-                    
-            # replace the old distribution
             self.d = new
-        elif obs: # OBSERVATION UPDATE
+        elif obs != None: # OBSERVATION UPDATE
             new = {}
             for k,v in self.d.iteritems():
-                if obs in self.Z[k[0]] and obs == k[1]:
-                    new[k] = v * self.Z[k[0]][obs]            
+                if obs in self.Z[k]:
+                    new[k] = v * self.Z[k][obs]
             self.d = new
             normalize(self.d)
         else: # bad call method
