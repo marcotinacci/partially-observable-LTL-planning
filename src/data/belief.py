@@ -3,17 +3,6 @@
 """
 import time
 
-# === STATIC METHODS ===
-def normalize(dist):
-        """ Normalize the dist distribution (static function) """
-        total = sum(dist.values())
-        for k,v in dist.iteritems():
-            dist[k] = v / total
-            
-def clean(dist):
-    """ Removes zero values from the dist distribution (static function) """
-    dist = { k:v for k,v in dist.iteritems() if v != 0 }
-
 # === CLASS BELIEF ===
 class belief:
     # state distribution
@@ -31,6 +20,16 @@ class belief:
             self.d = init
         self.M = M
         self.Z = Z
+
+    def normalize(self):
+            """ Normalize the belief distribution """
+            total = sum(self.d.values())
+            for k,v in self.d.iteritems():
+                self.d[k] = v / total
+                
+    def clean(self):
+        """ Removes zero values from the belief distribution """
+        self.d = { k:v for k,v in self.d.iteritems() if v != 0 }
 
     def returnUpdate(self, act=None, obs=None):
         """ 
@@ -60,7 +59,8 @@ class belief:
                     else:
                         new[sp] += self.d[s] * prob * z
             self.d = new
-            normalize(self.d)
+            self.clean()
+            self.normalize()
             
         elif act != None: # ACTION UPDATE
             new = {}
@@ -78,7 +78,7 @@ class belief:
                 if obs in self.Z[k]:
                     new[k] = v * self.Z[k][obs]
             self.d = new
-            normalize(self.d)
+            self.normalize()
         else: # bad call method
             raise ValueError("at least one action or one observation must be present")
 

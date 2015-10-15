@@ -38,7 +38,7 @@ def repulsiveScheduler(s, P, dim):
 	obs = obs.union(walls)
 
 	switcher = {
-		frozenset(): {'h'}, # never chose this
+		frozenset(): {'h'}, # never choose this
 		frozenset({'h'}): {'e', 'n', 's', 'w'},
 		frozenset({'n'}): {'s'},
 		frozenset({'s'}): {'n'},

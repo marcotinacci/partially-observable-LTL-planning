@@ -7,16 +7,22 @@ Support functions
 
 import random
 import itertools as it
+import robots as rob
+
+def counter(ci,ei,dim,countType):
+    if countType == 0: 
+        return 1 if ci in ei else 0
+    elif countType == 1:
+        return reduce(lambda y,z: y+z, \
+            map(lambda x: 1 if ci in rob.around(x,dim) else 0,ei))
+    else:
+        raise ValueError("countType value is not valid")
 
 def inverseObservation(O):
     return { obs:k for k,obs in enumerate(O)}
 
 def powerset(iterable):
-    # "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
     s = list(iterable)
-    # temp = [it.combinations(s, r) for r in range(len(s)+1)]
-    # return map(lambda x:frozenset(x),temp)
-    # "powerset([1,2,3]) --> fs{} fs{1} fs{2} fs{3} fs{1,2} fs{1,3} fs{2,3} fs{1,2,3}"
     temp = [list(it.combinations(s, r)) for r in range(len(s)+1)]
     return [frozenset(el) for t in temp for el in t]
 

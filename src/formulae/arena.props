@@ -1,5 +1,11 @@
-"avoid2" : filter(print, Pmin=?[ G<=1 (obs != 12 & obs != 29 & obs != 25 & obs != 20 & obs != 21 & obs != 23 & obs != 14 & obs != 31 & obs != 9 & obs != 30 & obs != 18 & obs != 28 & obs != 24 & obs != 27 & obs != 15 & obs != 5)], true)
+label "collision" = obs=12 | obs=29 | obs=25 | obs=20 | obs=21 | obs=23 | obs=14 | obs=31 | obs=9 | obs=30 | obs=18 | obs=28 | obs=24 | obs=27 | obs=15 | obs=5;
 
-"avoid1" : filter(print, Pmin=?[ G<=1 (obs=1)], true)
+label "vision" = obs!=0;
 
-"track" : filter(print, Pmin=?[ G<=1 (obs=12 & obs=29 & obs=25 & obs=20 & obs=21 & obs=23 & obs=14 & obs=31 & obs=9 & obs=30 & obs=18 & obs=28 & obs=24 & obs=27 & obs=15 & obs=5)], true)
+label "target" = x0=0 & y0=0;
+
+"avoid" : filter(print, Pmin=?[ G<=1 (! "collision")], true)
+
+"avoidAndReach" : filter(print, Pmin=?[ !"collision" U<=10 "target" ], true)
+
+"track" : filter(print, Pmin=?[ G<=1 ("vision" & !"collision")], true)
