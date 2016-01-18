@@ -1,0 +1,1 @@
+"open" : filter(print, Pmin=?[true U<=3 (pos=2)], true)

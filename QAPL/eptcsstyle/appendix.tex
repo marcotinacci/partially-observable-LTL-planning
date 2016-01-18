@@ -1,0 +1,171 @@
+%!TEX root = main.tex
+\newpage
+\section*{Appendix: Auxiliary notions and proofs}
+
+\subsection*{Preliminary concepts} % (fold)
+\label{sub:preliminary_concepts}
+
+\paragraph{Discrete-time Markov chains}
+%%%% CILINDRI DTMC
+The transition function $T$ induces a measure space on the set of \emph{paths} in a DTMC. 
+Given a finite path $\hat\pi = s_0 \dots s_n$, the cylinder set of $\hat\pi = s_0 \dots s_n \in FPaths^{\mathcal{D}}$ is defined as
+$$ \mathcal{C}^\mathcal{D}(\hat\pi) = \{ \pi \in Paths^{\mathcal{D}}\ |\ \hat\pi = \pi[..|\hat\pi|-1]\} $$
+A $\sigma$-algebra for the possible paths of a Markov chain $\mathcal{D}$ can be defined starting from the cylinder sets.
+The probability measure can be finally defined as follows:
+\begin{equation}\label{eq:mc_cyl}
+Pr^\mathcal{D}_s(\mathcal{C}^\mathcal{D}(s_0\dots s_n)) = 
+\begin{cases}
+	\prod_{i=1}^n T(s_{i-1})(s_i) \quad \mbox{if } s = s_0 \\
+	0 \quad \mbox{otherwise}
+\end{cases}
+\end{equation}
+%%%%
+\paragraph{Hidden Markov models}
+% arrow notations
+%We write $s \rightarrow s'$ when $s$ may go into $s'$, i.e., $T(s)(s') > 0$. We write $s \dashrightarrow o$ when, after a step, state $s$ may generate observation $o$, i.e., $Z(s)(o) > 0$.
+
+% paths set
+A path $\pi$ of $\mathcal{H}$ is a sequence $(s_0,o_0),(s_1,o_1)\dots \in (\mathcal{S}\times\mathcal{O})^\omega $ where 
+%$s_i \rightarrow s_{i+1}$, $s_i \dashrightarrow o_i$ 
+$T(s)(s')>0$, $Z(s)(o)>0$ and $i \in \mathbb{N}$.
+Let $Paths^\mathcal{H}$ denote the set of all paths in $\mathcal{H}$. 
+%For a path $\pi = (s_0,o_0),(s_1,o_1)\dots \in Paths^\mathcal{H}$, let $\pi_s[i] = s_i$ denote the $(i+1)$st state and $\pi_o[i] = o_i$ denote the $(i+1)$st observation. $FPaths^\mathcal{H} = \{\pi[..n] \ |\ n \in \mathbb{N} \wedge \pi \in Paths^\mathcal{H}\}$ denotes the set of finite paths of $\mathcal{H}$, where $\pi[..n] = (s_0,o_0),(s_1,o_1)\dots(s_n,o_n)$ represents the prefix of $\pi$ of length $n+1$. Let $Paths_\mathcal{O}^\mathcal{H} := \{(\pi_o[0],\pi_o[1]\dots)\ |\ \pi \in Paths^\mathcal{H}\}$ denote the set of observation paths and, defined in an analogous way, $FPaths_\mathcal{O}^\mathcal{H}$ denotes the set of finite observation paths.
+%
+% cylinder set
+and $\hat\pi \in FPaths^\mathcal{H}$ be a finite path on $\mathcal{H}$, we define a \emph{basic cylinder set} on $\hat\pi$ as follows:
+$$\mathcal{C}^\mathcal{H}(\hat\pi) = \{ \pi \in Paths^\mathcal{H}\ |\ \forall\ i \in [0..n] . \pi_{i,\mathcal{S}} = \hat\pi_{i,\mathcal{S}} \wedge \pi_{i,\mathcal{O}} = \hat\pi_{i,\mathcal{O}} \} $$
+
+Then we define a probability measure $Pr_s^\mathcal{H} : Cyl^\mathcal{H} \rightarrow [0,1]$ (see \cite{ZhangHJ05}) starting from a state $s \in \mathcal{S}$ as
+\begin{equation*}
+Pr^\mathcal{H}_s(\mathcal{C}^\mathcal{H}((s_0,o_0)\dots(s_n,o_n))) = \\ 
+Pr_s^\mathcal{H}(\mathcal{C}^\mathcal{H}((s_0,o_0)\dots(s_{n-1},o_{n-1})))\ T(s_{n-1})(s_n)\ Z(s_n)(o_n)
+\end{equation*}
+$$
+Pr_s^\mathcal{H}(\mathcal{C}^\mathcal{H}((s_0,o_0))) = \begin{cases}
+	Z(s_0)(o_0) \quad \text{if } s_0 = s\\
+	0 \quad \text{otherwise}
+\end{cases}
+$$
+
+By induction on $n$ we obtain:
+\begin{equation}\label{eq:prs}
+Pr_s^\mathcal{H}(\mathcal{C}^\mathcal{H}((s_0,o_0)\dots(s_n,o_n))) = \begin{cases}
+	Z(s_0)(o_0)\prod_{i=1}^{n} T(s_{i-1})(s_i)\ Z(s_i)(o_i) \quad \text{if } s_0 = s \\
+	0 \quad \text{otherwise}
+\end{cases}
+\end{equation}
+\begin{proposition}[\cite{ZhangHJ05}]
+Let $\mathcal{H}$ be a \ac{HMM} and $Cyl^\mathcal{H}$ be the set of all the basic cylinder sets over $FPaths^\mathcal{H}$, then $(Paths^\mathcal{H},Cyl^\mathcal{H})$ is a measurable space. Moreover, let $Pr^\mathcal{H}_s : Cyl^\mathcal{H} \rightarrow [0,1]$ the probability measure defined in Equation~(\ref{eq:prs}), then $(Paths^\mathcal{H},Cyl^\mathcal{H},Pr_s^\mathcal{H})$ is a probability space.
+\end{proposition}
+
+\subsection*{Intermediate results}
+
+The result that follows describe the relation between the probabilistic measure of \acp{POMDP} and \acp{MDP} when the initial state is known.
+
+\begin{proposition}\label{prop:cyl1} 
+Let $\mathcal{P}$ be a \ac{POMDP}, $s,s_0,\dots,s_n \in \mathcal{S}_{\mathcal{P}}$, $o_0,\dots,o_n \in \mathcal{O}_{\mathcal{P}}$ and $\eta \in Sched^{\mathcal{P}}$, it holds
+	$$ Pr_{s}^{\mathcal{P}_\eta} (\mathcal{C}^{\mathcal{P}_\eta}(s_0,o_0\dots s_n,o_n)) = Z(s_0,o_0) \cdot Pr_{(s,o_0)}^{\widehat{\mathcal{P}}_\eta} (\mathcal{C}^{\widehat{\mathcal{P}}_\eta}((s_0,o_0)\dots(s_n,o_n))) $$
+\end{proposition}
+%\begin{proposition}\label{prop:cyl2}
+%Let $\mathcal{P}$ be a \ac{POMDP}, $s_0,\dots,s_n \in \mathcal{S}_{\mathcal{P}}$, $o_0,\dots,o_n \in \mathcal{O}_{\mathcal{P}}$, $\eta \in Sched^{\mathcal{P}}$
+%and let $b \in \Delta(\mathcal{S})$ and $\overline{b} \in \Delta(\mathcal{S}\times\mathcal{O})$ be belief states respectively for $\mathcal{P}_\eta$ and $\widehat{\mathcal{P}}_\eta$ such that $\overline{b}(s,o) = b(s)\cdot Z(s)(o)$, it holds
+%	$$ Pr_b^{\mathcal{P}_\eta} (\mathcal{C}^{\mathcal{P}_\eta}(s_0,o_0\dots s_n,o_n)) =  Pr_{\overline{b}}^{\widehat{\mathcal{P}}_\eta} (\mathcal{C}^{\widehat{\mathcal{P}}_\eta}((s_0,o_0)\dots (s_n,o_n)))$$
+%\end{proposition}
+
+\begin{proposition}\label{prop:schedset}
+Let $\mathcal{P}$ be a \ac{POMDP}, $\widehat{\mathcal{P}}$ be the explicit \ac{MDP} of $\mathcal{P}$ and $\overline{\mathcal{P}}$ be the hidden \ac{MDP} of $\mathcal{P}$, $\widehat{Sched^\mathcal{\overline{P}}} \equiv \{\xi: \mathcal{S}\times\mathcal{O}\rightarrow \mathcal{A}\ |\ \exists\ \eta \in Sched^{\overline{\mathcal{P}}} : \forall\ s \in \mathcal{S},\forall\ o \in \mathcal{O} : \xi(s,o) = \eta(s) \}$, then
+
+$$ \widehat{Sched^\mathcal{\overline{P}}} \subseteq Sched^\mathcal{\widehat{P}} $$
+\end{proposition}
+
+% subsection preliminary_concepts (end)
+\subsection*{Proofs} % (fold)
+\label{sub:proofs}
+%Proof of Proposition~\ref{prop:sched}
+\begin{proof}[Proposition~\ref{prop:sched}]
+The straight implication can be proved as follows
+\begin{align*}
+	\sum_{m' \in \mathcal{S}_\mathcal{M}} T_{\mathcal{W}}(s,m,\overline\eta(s,\cdot))(s',m')
+	= \sum_{m' \in \mathcal{S}_\mathcal{M}} T_{\mathcal{M}}(m,\eta(s))(m') = 1
+\end{align*}
+The first equivalence is given by definition of $\overline\eta$ and $T_\mathcal{W}$ and we do not lose any component of the sum by hypothesis. In the second step we can exclude the case in which $T_\mathcal{M}(m,\eta(s)) = \bot$ because of the $\mathcal{A}_\mathcal{L}$-responsiveness of $\mathcal{M}$.
+
+The converse implication simply derives from the definition of $T_\mathcal{W}$: since the sum of transition probabilities is one, it exists at least one transition such that
+$ T_\mathcal{W}(s,m,\eta(s))(s',m') > 0 $
+with positive probability, it follows that $s \xrightarrow{\eta(s)} s'$.
+\end{proof}
+%Proof of Proposition~\ref{prop:beliefprob}
+\begin{proof}[Proposition~\ref{prop:beliefprob}]
+	% TODO da risistemare
+By hypothesis $b$ has support only on states having $l$ as a state of $\mathcal{L}$, that means that $init(l)$ are all and only the actions that can be executed from $b$. By the definition of $\mathcal{W}$ the transition function $T_\mathcal{W}$ must have probability zero only when states from $\mathcal{L}$ are not connected by an action, then it holds $ \sum_{m \in \mathcal{M}} b(l,m) = 1 \Rightarrow \sum_{m\in \mathcal{M}} b^a(l',m) = 1 $. We conclude the proof since it holds $b^a = 0 \Rightarrow b^{a,o}(s) = 0$ for any action $a$, observation $o$, belief state $b$ and state $s$.
+\end{proof}
+%Proof of Proposition~\ref{prop:cyl1}
+\begin{proof}[Proposition~\ref{prop:cyl1}]
+It trivially follows from equations (\ref{eq:mc_cyl}) and (\ref{eq:prs}).
+\end{proof}
+%Proof of Proposition~\ref{prop:cyl2}
+%\begin{proof}
+%It trivially follows from definitions (\ref{eq:prb1}) and (\ref{eq:prb2}).	
+%\end{proof}
+%Proof of Theorem~\ref{teo:pmins}
+
+\begin{proof}[Proposition~\ref{prop:schedset}]
+	We define $\widehat{Sched^{\overline{\mathcal{P}}}}$ as a set of schedulers for explicit \acp{MDP} that chose actions only relying on the current state mimicking the behavior of schedulers for the hidden \ac{MDP} of $\overline{\mathcal{P}}$. This kind of construction considers only schedulers for the explicit \ac{MDP} that choose the same action from the same state ignoring the observation. 
+	We can split schedulers in $Sched^{\mathcal{\widehat{P}}}$ in two partitions, schedulers that always take the same decisions in the same state and schedulers that take at least a different decision from the same state with different observations. We generate the former category excluding the latter, it follows that $\widehat{Sched^{\overline{\mathcal{P}}}} \subseteq Sched^{\widehat{\mathcal{P}}}$
+\end{proof}
+
+\begin{proof}[Theorem~\ref{teo:pmins}]
+
+%	$$ 
+%	\begin{array}{lll}
+%		p_{min}^\mathcal{M}(s, \varphi) &=& \inf_\eta Pr_s^{\mathcal{M}_\eta}\{\pi \in Paths^\mathcal{M}\ |\ \pi \models \varphi\} \\
+%		&=& \min_\eta Pr_s^{\mathcal{M}_\eta}\{\pi \in Paths^\mathcal{M}\ |\ \pi \models \varphi\} 
+%	\end{array}
+%	$$
+
+We rely on Proposition~\ref{prop:cyl1} for this proof, since it shows that cylinders probabilities in \acp{DTMC} and \acp{HMM} differ only of a multiplicative factor.
+
+During the passages the notation $psat(\varphi) \in (\mathcal{S}_{\mathcal{P}}\times\mathcal{O}_\mathcal{P})^*$ is used to define the set of finite paths of maximal length that satisfy $\varphi$.
+
+$$
+\begin{array}{lll}
+	p^{\widehat{\mathcal{P}}}_{min}((s,o),\varphi) &=& \displaystyle \inf_{\xi \in Sched^{\widehat{\mathcal{P}}}} Pr_{(s,o)}^{\widehat{\mathcal{P}}_{\xi}}\{\pi \in Paths^{\widehat{\mathcal{P}}}\ |\ \pi \models \varphi\} \\
+	%&& \{\text{We apply \cite[Lemma 10.102]{Katoen-Baier} to $\widehat{\mathcal{P}}$ that is a \ac{MDP}} \\
+	%&& \text{by Definition~\ref{def:emdp}}\} \\
+	%&=& \displaystyle \inf_{\xi \in Sched^{\widehat{\mathcal{P}}}} Pr_{(s,o)}^{\widehat{\mathcal{P}}_{\xi}}\{\pi \in Paths^{\widehat{\mathcal{P}}}\ |\ \pi \models \varphi\} \\
+	&& \{ \text{We reformulate the set of paths as the union of} \\
+	&& \text{cylinder sets obtained by } \varphi \} \\
+	&=& \displaystyle \inf_{\xi \in Sched^{\widehat{\mathcal{P}}}} \sum_{\hat\pi \in psat(\varphi)} Pr_{(s,o)}^{\widehat{\mathcal{P}}_{\xi}}(\mathcal{C}^{\widehat{\mathcal{P}}_{\xi}}(\hat\pi)) \\
+	&& \{\text{By the definition of probability measure} \\
+	&& \text{on Markov chains (\ref{eq:mc_cyl})}\} \\
+	&=& \displaystyle \inf_{\xi \in Sched^{\widehat{\mathcal{P}}}} \sum_{\substack{\hat\pi \in psat(\varphi) \wedge \\ \hat\pi = s,o,s_1,o_1\dots s_n,o_n }} \prod_{i=1}^n \widehat{T}((s_{i-1},o_{i-1}),\xi(s_{i-1},o_{i-1}))(s_i,o_i) \\
+	&& \{\text{By Definition~\ref{def:emdp} of $\widehat{T}$ and Proposition~\ref{prop:schedset}}\} \\
+	&\geq& \displaystyle \inf_{\eta \in \widehat{Sched^{\mathcal{\overline{P}}}}} \sum_{\substack{\hat\pi \in psat(\varphi) \wedge \\ \hat\pi = s,o,s_1,o_1\dots s_n,o_n}} \prod_{i=1}^n T(s_{i-1},\eta(s_{i-1}))(s_i) Z(s_i)(o_i) \\
+\end{array}
+$$
+
+In the following chain of equations we use the previous result to connect the minimum probability on $\mathcal{P}$ with a weighted sum of minimum probabilities on $\widehat{\mathcal{P}}$. %To do that we need to specify that, for any action $a$ $T(s,a)$
+
+$$
+\begin{array}{lll}
+	p^{\mathcal{P}}_{min}(s,\varphi) &=& \displaystyle \inf_{\eta \in Sched^{\mathcal{\overline{P}}}} Pr_s^{\mathcal{P}_{\eta}}\{\pi \in Paths^{\mathcal{P}}\ |\ \pi \models \varphi\} \\
+	&& \{ \text{We reformulate the set of paths as the union} \\ 
+	&& \text{of cylinder sets obtained by $\varphi$} \} \\
+	&=& \displaystyle \inf_{\eta \in Sched^{\mathcal{\overline{P}}}} \sum_{\hat\pi \in psat(\varphi)} Pr_s^{\mathcal{P}_\eta}(\mathcal{C}^{\mathcal{P}_\eta}(\hat\pi)) \\
+	&& \{ \text{By the definition of probability measure on \ac{HMM} (\ref{eq:prs})} \} \\
+	&=& \displaystyle \inf_{\eta \in Sched^{\mathcal{\overline{P}}}} \sum_{\substack{\hat\pi \in psat(\varphi) \wedge \\ \hat\pi = s,o_0,s_1,o_1\dots s_n,o_n}} Z(s)(o_0) \prod_{i=1}^n T(s_{i-1},\eta(s_{i-1}))(s_i) Z(s_i)(o_i) \\
+	&=& \displaystyle \inf_{\eta \in Sched^{\mathcal{\overline{P}}}} \sum_{\tilde{o}\in\mathcal{O}} \sum_{\substack{\hat\pi \in psat(\varphi) \wedge \\ \hat\pi = s,\tilde{o},s_1,o_1\dots s_n,o_n}} Z(s)(\tilde{o}) \prod_{i=1}^n T(s_{i-1},\eta(s_{i-1}))(s_i) Z(s_i)(o_i) \\
+	&& \{\text{Since the initial state $s$ does not change we can swap} \\ 
+	&& \text{the sum with the infimum operator}\} \\
+	&=& \displaystyle \sum_{\tilde{o}\in\mathcal{O}} Z(s)(\tilde{o}) \inf_{\eta \in Sched^{\mathcal{\overline{P}}}}  \sum_{\substack{\hat\pi \in psat(\varphi) \wedge \\ \hat\pi = s,\tilde{o},s_1,o_1\dots s_n,o_n}} \prod_{i=1}^n T(s_{i-1},\eta(s_{i-1}))(s_i) Z(s_i)(o_i) \\
+	&& \{\text{By the result of the previous equation}\} \\
+
+	&\leq& \displaystyle \sum_{\tilde{o}\in\mathcal{O}} Z(s)(\tilde{o}) \cdot p_{min}^{\widehat{\mathcal{P}}}((s,\tilde{o}),\varphi) \\
+\end{array}
+$$
+\end{proof}
+%Proof of Corollary~\ref{cor:infmin}
+\begin{proof}[Corollary~\ref{cor:infmin}]
+From \cite[Lemma 10.102]{Katoen-Baier} we know that, for a \ac{MDP} $\mathcal{M}$, it always exists a finite-memory scheduler that minimize the probabilities for $\varphi$. The result directly follows from it and Theorem~\ref{teo:pmins}.
+\end{proof}
+% subsection proofs (end)

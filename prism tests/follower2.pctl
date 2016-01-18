@@ -1,8 +1,0 @@
-Rmax=? [C<=k]
-
-Rmin=? [C<=k]
-
-Pmin=?[F<=k (collision | detect_left | detect_right)]
-
-Pmax=? [F<=k (collision | detect_left | detect_right)]
-

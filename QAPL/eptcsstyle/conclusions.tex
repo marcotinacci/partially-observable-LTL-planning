@@ -1,0 +1,44 @@
+%!TEX root = main.tex
+\vspace{-.3cm}
+\section{Conclusions and related works} % (fold)
+\label{sec:conclusions}
+
+% diamo un framework teorico come metodologia per sistemi adattivi
+We have presented a framework for modeling scenarios involving controllable agents, environmental elements and partial perception, where both probabilistic and deterministic behaviours are viable and can be mixed together. Then, we have provided an automatic procedure to build a scheduler for a controllable agent once a \ac{LTL} formula describing the target is given. Since we exploit a model checking algorithm to construct the scheduler, the resulting strategy is guaranteed to maximize the probability to satisfy the target formula.
+
+% offline
+The model checking approach allows to split the algorithm into an off-line and an on-line phase, during the former we can evaluate the model and precompute the adaptive scheduler that will be used in the latter to get better performance. Indeed, %the constructed scheduler consists of a light function representation 
+the resulting scheduler is just a simple function that maps local states and observations into actions. A possible scenario for using our approach could be to rely on  a high-performance computer to find the appropriate schedulers that could then be sent to small adaptive agents with a low computational power that by themselves would not be able to deal with the model generation phase. Even simpler, the high-performance computer could send the action that has to be executed next directly to the agent, whenever these call for support and communicate their observations.
+
+% target flexibility
+Using \ac{LTL} to describe goals gives large expressivity to the framework since conditions on perceptions can be described. Formulae describing avoidance and tracking of moving objects have been introduced and tested, individually and mixed together. Simulations show that multiple objectives can be handled at the same time. 
+%
+As future work, we would also like to provide a formal language to define composed partially observable models. In this way the designer would be exempted to explicitly write the models, but he would have at the same time the possibility of describing behaviours and observations. Another possible extension of the work is the formula updating in case of a reached (or missed) target.
+
+The model and scheduler generation suffers from a well known scalability issue, and even if this phase does not directly penalize the run-time performance, it could take a prohibitive amount of time. For this reason we plan also to exploit the abstraction technique presented in \cite{KattenbeltKNP10} that permits computing ranges of minimum and maximum probabilities of a given formula and a partition of the states; we want to use an observation-based partition to unburden the workload. 
+%Otherwise we could skip the model transformation phase where the state space explosion take place moving the algorithm to the initial configuration of the system where agent and environment are described individually. \marginpar{ultima frase non chiara} 
+Otherwise we could aim at analysing the model before the transformation phase (where we can have state space explosion) when agents and environment are described individually.  
+
+\vspace{-.35cm}
+\paragraph{Some related work} % (fold)
+\label{par:literature_review}
+%\emph{Some related work}
+Partially observable models like \acp{HMM} \cite{Rabiner90} and \acp{POMDP}~\cite{cassandra1998survey} have been successfully employed in many fields like speech-recognition~\cite{Rabiner90} and activity recognition for ambient assisted living~\cite{vicario2015continuous}.
+These models cope with
+%the lack of information typical of an adaptive system. 
+the adaptive system's typical lack of information.
+In particular \acp{POMDP} give the possibility to model the partial knowledge in presence of input and output interactions, as sensing and acting procedures. Finding the optimal scheduler is a problem that has been approached in different ways~\cite{LittmanCK95} since many theoretical limits have been proven to subsist: building the optimal scheduler function is PSPACE-complete in case of finite horizon~\cite{Papadimitriou1987} and determining its existence is undecidable for infinite horizon~\cite{MadaniHC99}.
+
+% model checking on partially observable models
+Model checking on \acp{HMM} is proposed in~\cite{ZhangHJ05} together with the extended definitions of branching-time and linear-time logics to include belief states and observation specifications. In this work we adopt a different perspective and we consider observations as label of states. We use classic \ac{LTL} formulae~\cite{Pnueli77} to express properties with probabilistic observations on \acp{POMDP}. 
+
+We did employ model checking techniques to solve a planning problem, 
+%this kind of approach has already been proposed in a similar way in~\cite{Bertoli2001,LagoPT02}. In~\cite{Bertoli2001} the model checking techniques are employed to solve a planning problem, 
+like in~\cite{Bertoli2001}, but  we further exploit the classical algorithm to solve the same problem at run-time. Also the logic used to formulate agent's objectives differs from the goal language proposed in~\cite{LagoPT02} since we focus on the explicit use of observation signals.
+
+%Linear-time model checking on \acp{POMDP} is just one step toward our aim, that is building a scheduler given an \ac{LTL} formula that describe the objective of the adaptive agent. Indeed, given a formula and the formal model of the system we can reuse the \ac{LTL} model checking algorithm to automatize the computation of a scheduler that can control the adaptive agent.
+
+% paragraph literature_review (end)
+
+
+% section conclusions (end)

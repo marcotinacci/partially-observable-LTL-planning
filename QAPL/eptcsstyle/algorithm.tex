@@ -1,0 +1,35 @@
+%!TEX root = main.tex
+\vspace{-1cm}
+\subsection{Taking decisions} % (fold)
+\label{sub:algorithm}
+
+With Algorithm~\ref{alg:main} we define the on-line procedure used at every step to select the best action to execute. The algorithm consists in evaluating the value function $V_a^\mathcal{W}$ of every action considering the current belief state $b$. This is implemented by the cycle (lines $1-4$). 
+
+At line $2$ we generate the belief state after an action $a$ using Equation~(\ref{eq:belief_update_a}). Equation~(\ref{eq:belief_update_a}) computes $b^a(s)$ in $O(|\mathcal{S}|^2)$, then we can obtain the entire state $b^a$ in $O(|\mathcal{S}|^3)$. The step at line $3$ is the
+average over the minimum probabilities to satisfy $\varphi$ weighted by the probability of being in that state according to $b^a$. Computing $p^\mathcal{W}_{min}(s,\varphi)$ costs $O(k |\mathcal{O}| |\mathcal{S}|(|\mathcal{S}|+M))$ (see \cite[Theorem 10.127]{Katoen-Baier}) where $k$ is number of maximal end components of the composition of the \ac{MDP} with the \ac{DRA} representing the LTL formula $\varphi$, and $M$ is the number of triples $(s,a,s')$ such that $T(s,a)(s') > 0$. Summing everything up we can compute $V_{a}^\mathcal{W}$ in $O(k|\mathcal{O}||\mathcal{S}|^2(|\mathcal{S}|+M))$ that is polynomial and slightly dominates the complexity of $\textsc{Expand}(b,a)$. However we can precompute minimum probabilities in order to access them at execution time in $O(|\mathcal{S}|)$.
+
+The construction of the \ac{DRA} $\mathcal{A}_\varphi$ is the most expensive operation in terms of computational complexity (2EXPTIME on $|\varphi|$). However this high complexity is not completely a bad news, indeed in linear time model checking we usually have short formulae and we can expect to have the same situation for planning. Moreover $\varphi$ does not change during the evaluation of every action, then it can be computed off-line once and for all the duration of the execution.
+
+The last step, at line $5$, is just a search for the index of a maximum that has cost $O(|\mathcal{A}_\mathcal{L}|)$. %, that is irrelevant with respect to the complexity of the $for$ cycle $O(k|\mathcal{A}_\mathcal{L}||\mathcal{O}||\mathcal{S}|^2(|\mathcal{S}|+M))$ (lines $1-4$).
+Considering precomputed minimum probabilities we have the following result
+
+\begin{proposition}
+Algorithm~\ref{alg:main} has complexity 
+$O(|\mathcal{A}_\mathcal{L}||\mathcal{S}_\mathcal{W}|^2)$
+%$O(k|\mathcal{A}_\mathcal{L}||\mathcal{O}|poly(size(\overline{\mathcal{W}})))$
+\end{proposition}
+
+\begin{algorithm}
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	\Input{$\varphi \in \text{LTL}$, $b \in \mathcal{B}$, $\mathcal{W}\ \text{POMDP}$}
+	\Output{$a_t \in \mathcal{A}_\mathcal{L}$}
+	\For{$a \in \mathcal{A}_\mathcal{L}$}{
+		$b^a \leftarrow \textsc{Expand}(b,a)$\;
+		$V_{a}^\mathcal{W} \leftarrow \sum_{s\in\mathcal{S}} b^a(s) \cdot p_{min}^\mathcal{W}(s,\varphi)$\; % \sum_{o\in \mathcal{O}} Z(s,o) \cdot p_{min}^{\widehat{\mathcal{W}}}((s,o),\varphi)$\;
+	}
+	$a_t \leftarrow \argmax_{a \in \mathcal{A}_\mathcal{L}}V_{a}^\mathcal{W}$\;
+	\Return{$a$\;}
+ \caption{Online decision algorithm to compute $\mathfrak{S}_\varphi^\mathcal{W}(b)$}\label{alg:main}
+\end{algorithm}
+

@@ -1,0 +1,21 @@
+%!TEX root = main.tex
+
+\begin{abstract}
+Modern software systems consist of a large number of agents that cooperate and compete
+to achieve \emph{local} and \emph{global} goals. Local goals are specific of single agents
+while the global ones refer to the expected emerging behaviour resulting from the interaction of many agents. 
+Agents are often located in an environment that can impact on their \emph{goals}.  
+For this reason it is crucial to have mechanisms that allow each agent to adapt its behaviour to
+the changing environmental conditions while guaranteeing goals achievement. When a change in the environment is perceived, each agent has to use its knowledge to perform specific actions and \emph{adapt} its behaviour.
+Unfortunately, only in rare cases agents have a complete view of the context where they are operating;  often only a partial view is available. 
+In this paper we show how formal tools, and specifically probabilistic model checking, can be used 
+to support dynamic adaptation of agents when only a partial \emph{observations} of the environment are available. 
+The proposed approach guarantees that each agent is  able to select those \emph{adaptation actions} that
+maximizes the probability of achieving the required goal.
+In the paper, system behaviour is described in terms of POMDP (Partial Observable Markov Decision Processes)
+while goals are specified using an appropriate variant of LTL.  
+A simple running example, based on a simple robotic scenario, is used to show the effectiveness of the proposed approach.
+\end{abstract}
+
+
+

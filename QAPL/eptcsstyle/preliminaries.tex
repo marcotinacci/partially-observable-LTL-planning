@@ -1,0 +1,283 @@
+%!TEX root = main.tex
+
+\section{Background} % (fold)
+\label{sec:preliminaries}
+
+In this section we introduce the preliminary concepts that provide the foundational base for the proposed approach. First we will recall basic definitions of \ac{LTS}, \ac{DTMC} and \acp{MDP}. Then we consider the partially observable extensions of the last two models that are, respectively, \acp{HMM} and \acp{POMDP}.
+
+In this paper we will use the following notation: $[i..j] \equiv i,i+1,\dots,j-1,j$ represents the sequence of natural numbers from $i$ to $j$, $[..j] \equiv [0..j]$, $\Delta(X)$ is the set of all the discrete probability distributions over any domain $X$ and $Y^\omega$ is the set of all the infinite sequences of elements of $Y$. We will adopt a name-space structure to ease the notation, when a structure defined as $X = \langle Y \rangle$ we can univocally index the internal element as $Y_X$. We omit the index when it is clear from the context.
+
+Since we need to describe different kinds of paths for different models, we introduce a uniform notation. Let $Paths^X$ be the set of infinite paths of a model $X$, we denote with $FPaths^X$ the set of prefixes of every path in $Paths^X$. Let $\pi = \pi_0, \pi_1, \dots$ be a path in $Paths^X$ where every element $\pi_i = (y_0,y_1,\dots,y_n) \in Y_0 \times Y_1 \times \dots \times Y_n$ ($i = 0,1,\dots$) is a tuple of elements $y_i$ from sets $Y_j$ ($j=0,1,\dots,n$), we denote with $\pi_{i,Y_j} = y_j$ the specific element of the tuple and with $\pi_{Y_j} = \pi_{0,Y_j},\pi_{1,Y_j},\dots$ the selection applied to every tuple of the path. Let $\pi = \pi_0,\dots,\pi_n$, the notation $|\pi| = n+1$ is used to indicate the length of a finite path. Moreover, we use the previously introduced notation $[i..j]$ to select specific subsequences of a path $\pi$ (finite or infinite): $\pi[i..j] = \pi_i,\dots,\pi_j$, $\pi[..j] = \pi_0,\dots,\pi_j$ and $\pi[i..] = \pi_i,\dots$ ($\pi[i..]$ stays for $\pi[i,\dots,|\pi|]$ for finite paths).
+
+\subsection*{Transition systems} % (fold)
+\label{sub:transition_systems}
+
+\ac{LTS}s are typically used to describe potential behaviour of discrete systems. Each \ac{LTS} consists of a set of \emph{states}, representing the possible system configurations.
+a set of \emph{actions}, identifying the activities that an be performed in the system, and a \emph{labeled transition relation}, describing the possible evolution of a state to another when 
+an activity is executed.
+
+\begin{definition}[\ac{LTS}]\label{def:lts}
+	A \emph{deterministic} \ac{LTS} is $\mathcal{L} = \langle \mathcal{S}, \mathcal{A}, T \rangle$ where $\mathcal{S}$ is the set of states, $\mathcal{A}$ is the set of actions and $T : \mathcal{S} \times \mathcal{A} \rightarrow \mathcal{S} \cup \{ \bot \}$ is the transition function.
+% $T \subseteq \mathcal{S} \times \mathcal{A} \times \mathcal{S}$ is the transition relation.
+\end{definition}
+As anticipated in the introduction, in our approach  we consider our system composed by two parts. 
+One that is completely known and the other that is only partially observable. A \ac{LTS} is used to model the behaviour of the agent that is known and for which we aim at synthesizing a successful strategy that that maximizes the chance of achieving a required goal.
+Since the controller has a \emph{deterministic behaviour}, in the definition above we limit our attention to only \emph{deterministic} \ac{LTS}. 
+Let $\mathcal{L} = \langle \mathcal{S}, \mathcal{A}, T \rangle$, we will write $s_1\xrightarrow{a}_{\mathcal{L}} s_2$ if and only if $T(s_1,a)=s_2\not=\bot$ (we use $s_1\xrightarrow{a} s_2$ when $\mathcal{L}$ is clear from the context). 
+Moreover, we let $init(s) = \{ a \in \mathcal{A}\ |\ T(s,a) \neq \bot \}$ denote the set of actions that can be performed starting from state $s$. 
+Finally, a (memoryless) scheduler for $\mathcal{L}$ is a function $\eta : S \rightarrow \mathcal{A}$ 
+%such that $\eta(s) \in init(s)$; we also let 
+and $Sched^\mathcal{L}$ denote the set of every scheduler of $\mathcal{L}$.
+% starting from the initial state $s_0 \in \mathcal{S}$.
+
+\begin{example}{}
+\label{ex:controller} 
+In our running example the agent modeled via the \ac{LTS} is the \emph{black robot} of Figure~\ref{fig:arenarobot}. If we consider an arena of size $k\times k$, 
+the states of the \ac{LTS} consists of the set of pairs $(i,j)$, with $1\leq i,j\leq k$, representing the position of the robot in the arena. 
+The set of actions is $\{ \mathsf{north}, \mathsf{east}, \mathsf{south}, \mathsf{west}, \mathsf{here} \}$ where the first three actions represent possible robot movements while the last one indicates that the robot remains in the current position. 
+Transition relation is:
+\[
+\begin{array}{c}
+(i,j) \xrightarrow{\mathsf{north}} (i,\min(k,j+1))\quad
+(i,j) \xrightarrow{\mathsf{east}} (\min(i+1,k),j) \\[.25cm]
+(i,j) \xrightarrow{\mathsf{sout}} (i,\max(1,j-1)) \quad
+(i,j) \xrightarrow{\mathsf{west}} (\max(1,i-1),j) \quad
+(i,j) \xrightarrow{\mathsf{here}} (i,j)
+\end{array}
+\]
+\end{example}
+
+% subsection transition_systems (end)
+
+\subsection*{Markov chains} % (fold)
+\label{ssec:markov_chains}
+
+In a \ac{LTS} possible evolutions of a system state are selected nondeterministically. However, it is sometime useful to render system 
+evolution in terms of a \emph{random process}. This is the case of \ac{DTMC}s.
+\begin{definition}[\ac{DTMC}]
+A \ac{DTMC} is $\mathcal{D} = \langle \mathcal{S}, 
+%\pi_0, 
+T, \mathscr{L} \rangle$
+where $\mathcal{S}$ is a finite set of states
+%, $\pi_0 \in \Delta(\mathcal{S})$ is the initial distribution over states 
+and $T: \mathcal{S} \rightarrow \Delta(\mathcal{S})$ is the transition function associating each state in $T$ with
+a probability distribution in $\Delta(\mathcal{S})$ and $\mathscr{L}:\mathcal{S} \rightarrow 2^{AP} $ is the labeling function on a set of atomic propositions $AP$.
+\end{definition}
+
+While in an \ac{LTS} next state is selected by the executed action, in a DTMC next state is selected probabilistically. 
+%Probability distribution governing the next step are obtained from the transition function $T$ as $T(s)(s') = p_{s,s'} \in P$ with $ s,s' \in \mathcal{S}$. $P \in [0,1]^{|\mathcal{S}|\times |\mathcal{S}|}$ is a stochastic matrix.
+%
+%The transition function $T$ induces a measure space on the set of \emph{paths} in a DTMC. 
+Paths in a \ac{DTMC} $\mathcal{D}$ are defined as sequences of states $\pi = s_0,\dots s_i,\dots \in Paths^{\mathcal{D}}$ such that for each $i \in [0..]$, $T(s_i)(s_{i+1})>0$.
+
+\begin{example}{}\label{ex:dtmc}
+The behaviour of a single white robot of Figure~\ref{fig:arenarobot} can be described by a \ac{DTMC}. Like in Example~\ref{ex:controller},
+the states of the \ac{DTMC} are the possible positions of the robot in the grid, i.e. pairs $(i,j)$. The transition function associates each element $(i,j)$ wth
+the uniform probability distribution among the adjacent positions. For instance, $T(1,1)=\{ (0,1):\frac{1}{5} , (1,0):\frac{1}{5} , (2,1):\frac{1}{5} , (1,2):\frac{1}{5} , (1,1):\frac{1}{5} \}$.
+\end{example}
+% subsection markov_chains (end)
+%
+\subsection*{Markov Processes} % (fold)
+\label{ssec:markov_processes}
+\ac{MDP}s mix \ac{LTS} and \ac{DTMC}. They provide a mathematical framework that models decision making when the outcomes are partly random and partly under the control of a decision maker.
+
+\begin{definition}[\ac{MDP}]
+A \ac{MDP} is $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, T,\mathscr{L} \rangle$
+where $\mathcal{S}$ is the set of states, $\mathcal{A}$ is the set of actions, $T : \mathcal{S} \times \mathcal{A} \rightarrow \Delta(\mathcal{S}) \cup \{\bot\}$ is the transition function and $\mathscr{L} : \mathcal{S} \rightarrow 2^{AP} $ is the labeling function on a set of atomic propositions $AP$.
+\end{definition}
+
+We write $s \xrightarrow{a} s'$ when $s$ may perform  $a$ and go to $s'$, i.e., $T(s,a)(s') > 0$. 
+%Probabilities of the transition function $T$ are defined in turn as $T(s,a)(s') = p^a_{s,s'} \in P_a$ with $s,s' \in \mathcal{S}$ and $a \in \mathcal{A}$. $P_a \in [0,1]^{|\mathcal{S}|\times |\mathcal{S}|}$ is a stochastic matrix that describe the probabilistic dynamics when action $a$ is chosen. 
+We use $s \not\xrightarrow{a}$ to say that  $a$ cannot be performed in state $s$, i.e., $T(s,a) = \bot$.
+%If we have the case $T(s,a) = \bot$ it means that action $a$ cannot be performed in state $s$, then we also say $p^a_{s,s'} = 0$ for any $s' \in \mathcal{S}$ and $s \not\xrightarrow{a}$.
+
+A \emph{scheduler} of a \ac{MDP} $\mathcal{M}$ is a function $\eta_\mathcal{M} : \mathcal{S} \rightarrow \mathcal{A}$ that maps states into actions. We use $Sched^\mathcal{M}$  to denote the set of all schedulers over \ac{MDP} $\mathcal{M}$.
+%We denote with $\mathcal{D}(\mathcal{M},\pi_{\mathcal{M}})$ the \ac{DTMC} obtained applying the scheduler $\pi_{\mathcal{M}}$ to the \ac{MDP} $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, T \rangle$, i.e., $\mathcal{D}(\mathcal{M},\pi_\mathcal{M}) = \langle \mathcal{S}, T' \rangle$ where $T'(s)(s') = T(s,\pi_\mathcal{M}(s))(s')$.
+% induced HMM
+We can use a scheduler to solve choices of a \ac{MDP}. When we apply a scheduler to a \ac{MDP} in this way, we obtain a \ac{DTMC} defined as follows
+\begin{definition}[Induced \ac{DTMC}]
+Let $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, T, \mathscr{L} \rangle$ be a \ac{MDP} and $\eta \in Sched^\mathcal{M}$. The \ac{DTMC} $\mathcal{M}_\eta$ is given by $ \mathcal{M}_\eta = \langle \mathcal{S}, T_\eta \rangle $
+where $T_\eta(s) = T(s,\eta(s))$ for every $s \in \mathcal{S}$.
+\end{definition}
+
+In the approach considered in this paper we use \ac{MDP} to model the environment where a given agent, i.e. the one 
+we control, operates. Agents and environment will be \emph{composed} to generate a detailed description of the system.
+\begin{example}
+\label{ex:environment}
+To model the environment where the \emph{black} robot of Figure~\ref{fig:arenarobot} operates, we can use a \ac{MDP} that 
+describes the movement of the \emph{white robot} in the arena. Each state space in this \ac{MDP} is a tuple the form $(p_1,\cdots,p_m)$
+where each $p_i$ represents the position of $i-$th white robot in the arena. This \ac{MDP} can perform the same actions of the \ac{LTS} in Example~\ref{ex:controller}:  $\{ \mathsf{north} , \mathsf{east}, \mathsf{south}, \mathsf{west}, \mathsf{here} \}$. The probability distribution associated to each of this action in a given state describes how
+the environment react to the execution of an action by our agent. Here we assume that all the white robots follow a random walk. 
+Let $T'$ be the transition function of the DTMC considered in Example~\ref{ex:dtmc}, we have that:
+\[
+T((p_1,\cdots,p_m),a)(p'_1,\cdots,p'_m)=\Pi_{i=1}^{m}T'(p_1)(p_1')
+\]
+\end{example}
+
+% subsection markov_processes (end)
+
+\subsection*{Partially observable models} % (fold)
+\label{sub:partially_observable_models}
+
+\ac{DTMC}s and \ac{MDP} can be used to formally describe a system behaviour. Moreover, many tools have been introduced to
+support system analysis. Unfortunately, only in rare cases one can have a complete view of the context where they are operating. 
+Often, only a partial view is available. 
+%
+In this section we recall some basic concepts from the literature about \ac{HMM} \cite{ZhangHJ05}.
+
+\begin{definition}[\ac{HMM}]
+An \ac{HMM} is $\mathcal{H} = \langle \mathcal{S}, T, \mathcal{O}, Z \rangle$
+where $\langle \mathcal{S}, T \rangle$ is a \ac{DTMC}, $\mathcal{O}$ is the set of observations and $Z : \mathcal{S} \rightarrow \Delta(\mathcal{O})$ is the observation function.<
+\end{definition}
+%
+%% CUTOUT BEGIN
+%% CUTOUT END
+%
+%\marginpar{Belief state}
+We define $b \in \Delta(\mathcal{S})$ as a \emph{belief state}. We denote $\mathcal{B}_{\mathcal{S}}$ as the \emph{belief space}, we know that $\mathcal{B} \subseteq \Delta(S)$, and $b_0 \in \mathcal{B}_\mathcal{S}$ denotes the initial belief. 
+
+%\marginpar{Belief update}
+%Given a belief state $b$ we can apply an observation $o$ to compute the next belief state $b' = b^{%o}$. We can compute such state with the following \emph{belief update} formula
+%\begin{equation}\label{eq:belief_update}
+%	b^{o}(s') = \frac{Z(s')(o)\sum_{s\in \mathcal{S}} T(s)(s')b(s)}{Pr(o|b)}
+%\end{equation}
+%where $Pr(o|b) = \sum_{s'\in\mathcal{S}} Z(s')(o)\sum_{s\in \mathcal{S}} T(s)(s')b(s)$.
+
+%% CUTOUT BEGIN
+%\marginpar{Belief probability measures}
+%We can extend the notion of probability measure to an initial belief state as follows
+%
+%\begin{equation}\label{eq:prb1}
+%Pr_b^\mathcal{M}(\mathcal{C}^\mathcal{M}(s_0\dots s_n)) = b(s_0) \prod_{i=1}^{n} T(s_{i-1})(s_i)
+%\end{equation}
+%
+%\begin{equation}\label{eq:prb2}
+%Pr_b^\mathcal{H}(\mathcal{C}^\mathcal{H}(s_0,o_0\dots s_n,o_n)) = b(s_0) Z(s_0)(o_0) \prod_{i=1}^{n} T(s_{i-1})(s_i)\ Z(s_i)(o_i)
+%\end{equation}
+%% CUTOUT END
+
+%\begin{definition}[\ac{BMC}]
+%Let $\mathcal{H} = \langle \mathcal{S}, T, \mathcal{O}, Z \rangle$ be a \ac{HMM}. The \ac{BMC} of $\%mathcal{H}$ is given by the \ac{DTMC} $\mathcal{D}(\mathcal{H}) = \langle \Delta(\mathcal{S}), T^\%mathcal{D} \rangle$ where:
+%$$ T^\mathcal{D}(b)(b') = \sum_{o \in \mathcal{O} : b^{o}=b'} \sum_{s' \in S} Z(s')(o) \sum_{s \in S%} b(s) \cdot T(s)(s') $$
+%\end{definition}
+%
+%Given an observable history $h = o_0,o_1,\dots,o_n \in FPaths_\mathcal{O}^\mathcal{H}$ on a \ac{HMM}% $\mathcal{H}$ and an initial belief $b_0$, a \emph{belief path} is a sequence $(b_0,o_0),(b_1,o_1),%\dots,(b_n,o_n)$ where $b_{i+1} = b_i^{o_{i+1}}$. The set containing all the belief paths is %denoted as $BPaths^\mathcal{H} \equiv FPaths^\mathcal{D(\mathcal{H})}$. 
+%We can write $b \xrightarrow{o} b'$ to say that $b' = b^{o}$, then we can also write a belief path as $b_0 \xrightarrow{o_1} b_1 \xrightarrow{o_2} b_2 \dots \xrightarrow{o_n} b_n$.
+
+% paragraph belief_states (end)
+
+% subsection partially_observable_models (end)
+%\subsection*{Partially observable processes} % (fold)
+%\label{ssec:partial_observability}
+
+We can have partial information about the current state also for \ac{MDP} extending it in the same way we defined \acp{HMM} as \acp{DTMC} with limited information. The resulting model is a \ac{POMDP} that include probabilistic behaviour, partial observability and action control, and it is defined as follows
+\begin{definition}[\ac{POMDP}]
+A \ac{POMDP} is $\mathcal{P} = \langle \mathcal{S}, \mathcal{A}, T, \mathcal{O}, Z \rangle$
+where $\langle \mathcal{S}, \mathcal{A}, T \rangle$ is a \ac{MDP}, $\mathcal{O}$ is the set of observations and $Z : \mathcal{S} \rightarrow \Delta(\mathcal{O})$ is the observation function.
+\end{definition}
+%
+
+\setlength\intextsep{0pt}
+\begin{wrapfigure}{r}{0.4\textwidth}
+\vspace{-1.5cm}
+%\begin{figure}[ht]
+	\begin{center}
+	\begin{tikzpicture}[->, every node/.style={transform shape},node distance=1.5cm,thin, every path/.style={transform shape},scale=0.85,
+	  node/.style={circle,transform shape,fill=white,draw,font=\sffamily},
+	  dot/.style={shape=circle,transform shape,fill=white,draw,minimum size=4pt,inner sep=0pt},
+	  obs/.style={rectangle,transform shape,fill=white,draw,font=\sffamily}]
+	  \node[node] (0) [label=above:$\pi_0$,draw]{$s_0$};
+	  \node[dot] (0a) [below left=1cm of 0] {$\pi_a$};
+	  \node[dot] (0b) [below right=1cm of 0] {$\pi_b$};
+	  \node[node] (1) [below of = 0a, label=below:$\pi_1$,draw] {$s_1$};
+	  \node[node] (2) [below of = 0b, label=below:$\pi_2$,draw] {$s_2$};
+	  \node[obs] (o1) [below of = 1] {$o_1$};
+	  \node[obs] (o2) [below of = 2] {$o_2$};
+%
+	  \path[every node/.style={font=\sffamily\small}]
+	    (0) edge node [left=4pt] {$a$} (0a)
+	    (0) edge node [right=4pt] {$b$} (0b)
+	    (0a) edge node [left=4pt] {} (1)
+	    (0a) edge node [left=4pt] {} (2)
+	    (0b) edge node [left=4pt] {} (1)
+	    (0b) edge node [left=4pt] {} (2)
+	    (0) edge [dashed, bend right = 130] node [right=1pt] {} (o1)
+	    (0) edge [dashed, bend left = 130] node [right=1pt] {} (o2)
+	    (1) edge [dashed, bend right] node [right=1pt] {} (o1)
+	    (1) edge [dashed] node [right=1pt] {} (o2)
+	    (2) edge [dashed] node [right=1pt] {} (o1)
+	    (2) edge [dashed, bend left] node [right=1pt] {} (o2);
+	\end{tikzpicture}
+	\end{center}
+	\vspace{-1cm}
+	\caption{An example of POMDP}
+	\label{fig:pomdp}
+\end{wrapfigure}
+
+%
+% arrow notations
+We write $s \xrightarrow{a} s'$ when $s$ may perform action $a$ and go into $s'$, i.e., $T(s,a)(s') > 0$.
+% and $s \xrightarrow{a}$ means that there exists a state $s'$ such that $s \xrightarrow{a} s'$. We write $s \dashrightarrow o$ when, after a step, state $s$ may generate observation $o$, i.e., $Z(s)(o) > 0$. Again, we write $s \xrightarrow{a,o} s'$ when $s$ may perform action $a$, generate observation $o$ and go into $s'$, i.e., $s \xrightarrow{a} s' \wedge s \dashrightarrow o$.
+%
+% paths set
+$Paths^\mathcal{P}$ contains infinite sequences $\pi$ of elements $\pi_i = (s,o,a) \in \mathcal{S} \times \mathcal{O} \times \mathcal{A}$ for $i \in [0..]$, such that $s_i \xrightarrow{a_i} s_{i+1}$, $Z(s_i)(o_i) > 0$.
+%A path $\pi$ of $\mathcal{P}$ is a sequence $(s_0,o_0,a_0),(s_1,o_1,a_1)\dots \in (\mathcal{S}\times\mathcal{O}\times\mathcal{A})^\omega $ where $s_i \xrightarrow{a_i} s_{i+1}$, $Z(s_i)(o_i) > 0$ and $i \in [0..]$.
+%Let $Paths^\mathcal{P}$ denote the set of all paths in $\mathcal{P}$. For a path $\pi = (s_0,o_0,a_0),(s_1,o_1,a_1)\dots \in Paths^\mathcal{P}$, let $\pi_s[i] = s_i$ denote the $(i+1)$st state, $\pi_o[i] = o_i$ denote the $(i+1)$st observation and $\pi_a[i] = a_i$ denote the $(i+1)$st action of $\pi$. $FPaths^\mathcal{P} = \{\pi[..n] \ |\ n \in \mathbb{N} \wedge \pi \in Paths^\mathcal{P}\}$ denotes the set of finite paths of $\mathcal{P}$, where $\pi[..n] = (s_0,o_0,a_0),(s_1,o_1,a_1)\dots(s_n,o_n,a_n)$ represents the prefix of $\pi$ of length $n+1$. 
+%
+% scheduler
+We define a finite-memory scheduler over $\mathcal{P}$ as a function $\eta : \mathcal{B}_\mathcal{S} \times FPaths_{\mathcal{A},\mathcal{O}}^\mathcal{P} \rightarrow \mathcal{A}$ such that 
+$$
+\eta(b,\pi) = 
+\begin{cases}
+	\eta(b^{\pi_{i,\mathcal{A}},\pi_{i,\mathcal{O}}},\pi[1..]) & \text{if } |\pi| > 0 \\
+	\eta(b) & \text{otherwise} \\
+\end{cases}
+$$ 
+where $\eta(b)$ is a memoryless scheduler that maps belief states into choices $\eta:\mathcal{B}\rightarrow\mathcal{A}$. We use $Sched^\mathcal{P}$  to denote
+%and $FSched^\mathcal{P}$ respectively 
+the set of all (memoryless) 
+%and finite-memory 
+schedulers over \ac{POMDP} $\mathcal{P}$. 
+%We use the term scheduler as a shortcut for memory-less scheduler.
+% internal MDP
+We use $\overline{\mathcal{P}} = \langle \mathcal{S}_\mathcal{P}, \mathcal{A}_\mathcal{P}, T_\mathcal{P} \rangle$ to isolate the hidden \ac{MDP} from the partially observable model.
+
+% induced HMM
+We can use a scheduler to solve choices of a \ac{POMDP}. When we apply a scheduler to a \ac{POMDP} in this way, we obtain a \ac{HMM} defined as follows
+
+\begin{definition}[Induced \ac{HMM}]
+	Let $\mathcal{P} = \langle \mathcal{S}, \mathcal{A}, T, \mathcal{O}, Z \rangle$ be a \ac{POMDP} and $\eta \in Sched(\overline{\mathcal{P}})$. The \ac{HMM} $\mathcal{P}_\eta$ is given by
+	\vspace{-.3cm}
+$$ \mathcal{P}_\eta = \langle \mathcal{S}, T_\eta, \mathcal{O}, Z \rangle $$
+
+\vspace{-.3cm}
+\noindent
+where $T_\eta(s) = T(s,\eta(s))$ for every $s \in \mathcal{S}$.
+\end{definition}
+
+Given a belief state $b$ we can apply an action $a$ and an observation $o$ to compute the next belief state $b' = b^{a,o}$. We can compute such state, even considering the effect of a single action or a single observations, with the following belief update formulae
+
+\begin{equation}\label{eq:belief_update_ao}
+	b^{a,o}(s') = \frac{Z(s')(o)\sum_{s\in \mathcal{S}} T(s,a)(s')b(s)}{\sum_{\tilde{s}\in\mathcal{S}} Z(\tilde{s})(o)\sum_{s\in \mathcal{S}} T(s,a)(\tilde{s})b(s)}
+\end{equation}
+\begin{equation}\label{eq:belief_update_a}
+	b^{a}(s') = \sum_{s\in \mathcal{S}} T(s,a)(s')b(s)
+\end{equation}
+%\begin{equation}\label{eq:belief_update_o}
+%	b^{o}(s') = \frac{b(s') \cdot Z(s')(o)}{\sum_{s\in\mathcal{S}} b(s)\cdot Z(s)(o)}
+%\end{equation}
+
+%where $Pr(o|a,b) = \sum_{s'\in\mathcal{S}} Z(s')(o)\sum_{s\in \mathcal{S}} T(s,a)(s')b(s)$.
+
+%\begin{definition}[\ac{BMDP}]
+%Let $\mathcal{P} = \langle \mathcal{S}, \mathcal{A}, T, \mathcal{O}, Z \rangle$ be a \ac{POMDP}. %The \ac{BMDP} of $\mathcal{P}$ is given by the \ac{MDP} $\mathcal{M}(\mathcal{P}) = \langle \Delta(\%mathcal{S}), \mathcal{A}, T^\mathcal{M} \rangle$ where:
+%$$ T^\mathcal{M}(b,a)(b') = \sum_{o \in \mathcal{O} : b^{a,o}=b'} \sum_{s' \in S} Z(s')(o) \sum_{s \%in S} b(s) \cdot T(s,a)(s') $$
+%\end{definition}
+%
+%Given an observable history $h = (a_0,o_0),(a_1,o_1),\dots,(a_n,o_n) \in FPaths_\mathcal{O}^\mathcal{P}$ on a \ac{POMDP} $\mathcal{P}$ and an initial belief $b_0$, a \emph{belief path} on a \ac{BMDP} $\mathcal{M}(\mathcal{P})$ is a sequence $(b_0,a_0,o_0),(b_1,a_1,o_1),\dots,(b_n,a_n,o_n)$ where $b_{i+1} = b_i^{a_i,o_{i+1}}$. The set containing all the belief paths is denoted as $BPaths^\mathcal{P} \equiv FPaths^{\mathcal{M}(\mathcal{P})}$.
+
+%We can write $b \xrightarrow{a} b'$ to say that $b' = b^{a,o}$, then we can also write a belief path as $b_0 \xrightarrow{a_0} b_1 \xrightarrow{a_1} b_2 \dots \xrightarrow{a_{n-1}} b_n$. % FIX non torna
+
+% subsection partial_observability (end)
+
+% section preliminaries (end)

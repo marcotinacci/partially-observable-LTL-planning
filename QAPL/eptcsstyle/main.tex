@@ -1,0 +1,97 @@
+%!TEX program = pdflatex
+\documentclass[submission,copyright]{eptcs}
+\providecommand{\event}{QAPL 2016} % Name of the event you are submitting to
+\usepackage{breakurl}             % Not needed if you use pdflatex only.
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[nolist]{acronym}
+\usepackage[english]{babel}
+\usepackage[lined,boxed,linesnumbered,ruled]{algorithm2e}
+\usepackage{mathrsfs}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{wrapfig}
+\usepackage{thmtools,thm-restate,amsthm}
+
+
+\usepackage{tikz} % DISEGNI
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{positioning}
+
+\DeclareMathOperator*{\argmax}{arg\,max} % \argmax_
+\DeclareMathOperator*{\argmin}{arg\,min} % \argmin_
+
+% === ACRONYMS LIST ===
+\begin{acronym}
+  \acro{LTS}{Labeled Transition System}
+  \acro{DTMC}{Discrete-Time Markov Chain}
+  \acro{MDP}{Markov Decision Process}
+  \acro{BMDP}{Belief Markov Decision Process}
+  \acro{HMM}{Hidden Markov Model}
+  \acro{BMC}{Belief Markov Chain}
+  \acro{POMDP}{Partially Observable Markov Decision Process}
+  \acro{LTL}{Linear Temporal Logic}
+  \acro{DRA}{Deterministic Rabin Automaton}
+  \acro{NBA}{Nondeterministic B\"uchi Automaton}
+\end{acronym}
+
+\acrodefplural{LTS}[LTSs]{Labeled Transition Systems}
+\acrodefplural{DTMC}[DTMCs]{Discrete-Time Markov Chains}
+\acrodefplural{MDP}[MDPs]{Markov Decision Processes}
+\acrodefplural{BMDP}[BMDPs]{Belief Markov Decision Processes}
+\acrodefplural{HMM}[HMMs]{Hidden Markov Models}
+\acrodefplural{BMC}[BMCs]{Belief Markov Chains}
+\acrodefplural{POMDP}[POMDPs]{Partially Observable Markov Decision Processes}
+\acrodefplural{DRA}{Deterministic Rabin Automata}
+\acrodefplural{NBA}{Nondeterministic B\"uchi Automata}
+
+% Theorem Styles
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+% Definition Styles
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}{Example}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\title{Adaptation in partially observable environments via model checking}
+\author{Rocco De Nicola
+\institute{IMT Institute for Advanced Studies Lucca, Italy}
+\email{\quad rocco.denicola@imtlucca.it}
+\and
+Michele Loreti 
+\institute{Universit\`a degli Studi di Firenze, Italy}
+\email{michele.loreti@unifi.it}
+\and
+Marco Tinacci
+\institute{IMT Institute for Advanced Studies Lucca, Italy}
+\email{marco.tinacci@imtlucca.it}
+}
+\def\titlerunning{Adaptation in partially observable environments via model checking}
+\def\authorrunning{R. De Nicola, M. Loreti \& M. Tinacci}
+
+\begin{document}
+\maketitle
+
+% === SECTIONS ===
+\input{abstract.tex}
+\input{introduction.tex}
+\input{preliminaries.tex}
+\input{model.tex}
+\input{algorithm.tex}
+\input{casestudy.tex}
+\input{conclusions.tex}
+
+% === BIBLIOGRAPHY ===
+\nocite{*}
+\bibliographystyle{eptcs}
+\bibliography{biblio}
+\input{appendix.tex}
+
+\end{document}
