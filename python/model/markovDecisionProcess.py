@@ -19,13 +19,19 @@ class MarkovDecisionProcess:
         self.actions = dict(enumerate(A))
         self.inv_actions = {v:k for k,v in self.actions.iteritems()}
         # transitions
+        print 'T:',T
+        print 'states',self.states
+        print 'inv_states',self.inv_states
         self.transitions = {
             (self.inv_states[s1],self.inv_actions[a]) : 
             {self.inv_states[s2]:pr for s2,pr in d.iteritems()} 
                 for (s1,a),d in T.iteritems()}
+        print 'tran:', self.transitions
 
     def __str__(self):
-        ret = 'S: ' + str(self.states) +'\nA: '+ str(self.actions) +'\nT: '+ str(self.transitions)
+        ret = 'S: ' + str(self.states)\
+            + '\nA: ' + str(self.actions)\
+            + '\nT: ' + str(self.transitions)
         return ret
 
 # >>> main test
@@ -44,6 +50,7 @@ if __name__ == "__main__":
             }
         )
     print str(mdp)
+
 
 # >>> authorship information
 

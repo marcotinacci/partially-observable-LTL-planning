@@ -36,6 +36,21 @@ class Distribution:
 #		return True if float(sum(self.distr.values())) == 1.0 \
 #			else False
 
+	def equals(self, d):
+		""" Compare with a distribution d """
+		if self == d:
+			return True
+		eq = True
+		for k,v in self.distr.iteritems():
+			if k in d.distr:
+				if d.distr[k] != v:
+					eq = False
+					break
+			else:
+				eq = False
+				break
+		return eq
+
 	@staticmethod
 	def normalize(distribution):
 		""" Distribution normalization """
@@ -70,6 +85,13 @@ class Distribution:
 	def diracPfd(e,domain,e1):
 		""" Dirac distribution """
 		return Distribution.restrictedUniformPdf(e,domain,{e1})
+
+	def __str__(self):
+		ret = "id, element, probability\n"
+		for i,e in self.support.iteritems():
+			if i in self.distr:
+				ret = ret + str(i) + ', ' + str(e) + ', ' + str(self.distr[i]) + '\n'
+		return ret
 
 	def __str__(self):
 		ret = "id, element, probability\n"

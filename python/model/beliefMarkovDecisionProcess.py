@@ -38,19 +38,25 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 		nxtQ = Queue()
 		Q.put(prior)
 		level = 0
-		print level, len(Q.queue)
-		#while (not Q.empty() or not nxtQ.empty()) and level < horizon:
 		while not Q.empty() and level < horizon:
 			current = Q.get()
 			B.add(current)
-			print 'current:',current
 			for act in pomdp.actions:
 				for obs in pomdp.observations:
 					nxt = self.__beliefUpdate(pomdp,current,act,obs)
-					print 'next:',nxt
+					# find-the-copy function
+					find = lambda lst, el : \
+						reduce(lambda a,b: a if a != None else b, \
+						map(lambda x : x if el.equals(x) else None, lst))
+					# search for the same belief state
+					same = find(list(B) + list(Q.queue) + list(nxtQ.queue),nxt)
 					# do not add the state if already visited before
-					if nxt not in B and nxt not in Q.queue:
+					if same == None:
 						nxtQ.put(nxt)
+					else:
+						# keep the reference to compute 
+						# the transition function probability
+						nxt = same
 					# add the probability mass to the transition function
 					# compute Pr(o|b,a)
 					pr = 0.0
@@ -74,13 +80,11 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 							# if (b,a)(b') entry already exists 
 							# increment the probability
 							T[(current,pomdp.actions[act])][nxt] += pr
-						print "pr: ",pr
 			# if Q is empty replace it with nxtQ of the next level
 			if Q.empty():
 				Q = nxtQ
 				nxtQ = Queue()
 				level += 1
-				print level, len(Q.queue)
 
 		# add last level from Q 
 		for b in Q.queue:
@@ -118,7 +122,7 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 # >>> main test
 
 if __name__ == "__main__":
-    pomdp = PartiallyObservableMarkovDecisionProcess(
+	pomdp = PartiallyObservableMarkovDecisionProcess(
 			{'s0','s1','s2'},
 			{'a','b'},
 			{
@@ -136,11 +140,25 @@ if __name__ == "__main__":
 				's2': {'o1': 0.3, 'o2': 0.7}
 			}
         )
+#    pomdp = PartiallyObservableMarkovDecisionProcess(
+#			{'s0','s1'},
+#			{'a'},
+#			{
+#				('s0','a'): {'s0': 0.5, 's1': 0.5},
+#				('s1','a'): {'s0': 0.5, 's1': 0.5},
+#			},
+#			{'o0','o1'},
+#			{
+#				's0': {'o0': 0.5, 'o1': 0.5},
+#				's1': {'o0': 0.5, 'o1': 0.5}
+#			}
+#        )
     prior = Distribution(pomdp.states,Distribution.uniformPdf)
     bmdp = BeliefMarkovDecisionProcess(pomdp,3,prior)
-    print len(bmdp.states)
-    print bmdp
-
+    print 'print bmdp:',bmdp
+    import exportToPrism as exp
+    exp.mdp2sta(bmdp,'test.sta')
+    exp.mdp2tra(bmdp,'test.tra')
 
 # >>> authorship information
 
