@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-"""
-
 # >>> import modules
 
 from distribution import Distribution
 from markovDecisionProcess import MarkovDecisionProcess
 from partiallyObservableMarkovDecisionProcess import PartiallyObservableMarkovDecisionProcess
 from Queue import Queue
+import caseStudies as cs
 
 # >>> code
 
@@ -122,43 +120,13 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 # >>> main test
 
 if __name__ == "__main__":
-	pomdp = PartiallyObservableMarkovDecisionProcess(
-			{'s0','s1','s2'},
-			{'a','b'},
-			{
-				('s0','a'): {'s0': 0.0, 's1': 0.2, 's2': 0.8},
-				('s0','b'): {'s0': 0.0, 's1': 0.4, 's2': 0.6},
-				('s1','a'): {'s1': 1.0},
-				('s1','b'): {'s1': 1.0},
-				('s2','a'): {'s2': 1.0},
-				('s2','b'): {'s2': 1.0}
-			},
-			{'o1','o2'},
-			{
-				's0': {'o1': 0.5, 'o2': 0.5},
-				's1': {'o1': 0.5, 'o2': 0.5},
-				's2': {'o1': 0.3, 'o2': 0.7}
-			}
-        )
-#    pomdp = PartiallyObservableMarkovDecisionProcess(
-#			{'s0','s1'},
-#			{'a'},
-#			{
-#				('s0','a'): {'s0': 0.5, 's1': 0.5},
-#				('s1','a'): {'s0': 0.5, 's1': 0.5},
-#			},
-#			{'o0','o1'},
-#			{
-#				's0': {'o0': 0.5, 'o1': 0.5},
-#				's1': {'o0': 0.5, 'o1': 0.5}
-#			}
-#        )
-    prior = Distribution(pomdp.states,Distribution.uniformPdf)
-    bmdp = BeliefMarkovDecisionProcess(pomdp,3,prior)
-    print 'print bmdp:',bmdp
-    import exportToPrism as exp
-    exp.mdp2sta(bmdp,'test.sta')
-    exp.mdp2tra(bmdp,'test.tra')
+	pomdp = cs.tigerPomdp()
+	prior = Distribution(pomdp.states,Distribution.uniformPdf)
+	bmdp = BeliefMarkovDecisionProcess(pomdp,3,prior)
+	print 'print bmdp:',bmdp
+	import exportToPrism as exp
+	exp.mdp2sta(bmdp,'test.sta')
+	exp.mdp2tra(bmdp,'test.tra')
 
 # >>> authorship information
 

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-"""
-
 # >>> import modules
+
+import caseStudies as cs
 
 # >>> code
 
@@ -38,20 +37,7 @@ class PartiallyObservableMarkovDecisionProcess:
 # >>> main test
 
 if __name__ == '__main__':
-	pomdp = PartiallyObservableMarkovDecisionProcess(
-		{'s0','s1','s2'},
-		{'a','b'},
-		{
-			('s0','a'): {'s0': 0, 's1': 0.2, 's2': 0.8},
-			('s0','b'): {'s0': 0, 's1': 0.4, 's2': 0.6}
-		},
-		{'o1','o2'},
-		{
-			's0': {'o1': 0.5, 'o2': 0.5},
-			's1': {'o1': 0.5, 'o2': 0.5},
-			's2': {'o1': 0.3, 'o2': 0.7}
-		}
-	)
+	pomdp = cs.treeStatesPomdp()
 	print pomdp
 
 # >>> authorship information

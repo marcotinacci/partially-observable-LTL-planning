@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-"""
+""" Export to PRISM format files """
 
 # >>> import modules
 
@@ -15,11 +14,13 @@ def mdp2sta(mdp,filename):
 	FILE.write(head+'\n')
 	for i,s in enumerate(mdp.states):
 		FILE.write( str(i) + ':(' + str(s) + ')\n' )
+	FILE.close()
 
 def mdp2lab(mdp,filename):
 	""" Export labels to .lab prism file """
 	with open(filename,'w') as FILE:
 		FILE.write("0=\"init\" 1=\"deadlock\"\n0: 0")
+	FILE.close()
 
 def mdp2tra(mdp,filename,bunch=100000):
 	""" 
@@ -57,7 +58,7 @@ def mdp2tra(mdp,filename,bunch=100000):
 				temp = ""
 		# write the remaining
 		FILE.write(str(temp))
-
+	FILE.close()
 
 # >>> authorship information
 
