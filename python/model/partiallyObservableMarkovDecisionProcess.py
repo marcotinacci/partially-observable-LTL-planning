@@ -13,14 +13,21 @@ class PartiallyObservableMarkovDecisionProcess:
 		# states
 		self.states = dict(enumerate(S))
 		self.inv_states = {v:k for k,v in self.states.iteritems()}
+
 		# actions
 		self.actions = dict(enumerate(A))
 		self.inv_actions = {v:k for k,v in self.actions.iteritems()}
 		# transitions
-		self.transitionFunction = {
-		    (self.inv_states[s1],self.inv_actions[a]) : 
-		    {self.inv_states[s2]:pr for s2,pr in d.iteritems()} 
-		        for (s1,a),d in T.iteritems()}
+		self.transitionFunction = dict()
+		for (s1,a),d in T.iteritems():
+			for s2,pr in d.iteritems():
+				if (self.inv_states[s1],self.inv_actions[a]) \
+					not in self.transitionFunction:
+					self.transitionFunction[(self.inv_states[s1],\
+						self.inv_actions[a])] = dict()
+				self.transitionFunction[(self.inv_states[s1],\
+					self.inv_actions[a])][self.inv_states[s2]] = pr
+
 		# observations
 		self.observations = dict(enumerate(O))
 		self.inv_observations = {v:k for k,v in self.observations.iteritems()}
@@ -31,7 +38,11 @@ class PartiallyObservableMarkovDecisionProcess:
 				for s,d in Z.iteritems()}
 
 	def __str__(self):
-		ret = 'S: '+ str(self.states) + '\nA: '+ str(self.actions) + '\nT: '+ str(self.transitionFunction) + '\nO: '+ str(self.observations) + '\nZ: '+ str(self.observationFunction)
+		ret = 'S: '+ str(self.states) +\
+			'\nA: '+ str(self.actions) +\
+			'\nT: '+ str(self.transitionFunction) +\
+			'\nO: '+ str(self.observations) +\
+			'\nZ: '+ str(self.observationFunction)
 		return ret
 
 # >>> main test

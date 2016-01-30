@@ -7,13 +7,23 @@
 
 # >>> code
 
-def export2dot(mdp,name,filename):
+def export2dot(mdp,name,filename,red=[],green=[],blue=[],blueborder=[]):
 	FILE = open(filename,'w')
 	FILE.write('digraph ' + name + ' {\n')
 
 	# states style
 	for i in mdp.states:
-		FILE.write( '\t' + str(i) + ' [label="' + str(i) + '"];\n' )
+		color = ""
+		if i in red:
+			color = ', style=filled, fillcolor=red'
+		elif i in green:
+			color = ', style=filled, fillcolor=green'
+		elif i in blue:
+			color = ', style=filled, fillcolor=cyan'
+		if i in blueborder:
+			color += ', color=blue'
+		FILE.write( '\t' + str(i) + ' [label="' + \
+			str(i) + '"' + color + '];\n' )
 
 	# print
 	for (i1,a),d in mdp.transitions.iteritems():

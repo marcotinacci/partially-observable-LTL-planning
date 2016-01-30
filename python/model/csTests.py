@@ -6,6 +6,7 @@
 
 # >>> import modules
 
+import itertools as it
 import partiallyObservableMarkovDecisionProcess as pomdp
 
 # >>> code
@@ -37,7 +38,7 @@ def tigerPomdp():
 		}
 	)
 
-def treeStatesPomdp():
+def threeStatesPomdp():
 	return pomdp.PartiallyObservableMarkovDecisionProcess(
 		{'s0','s1','s2'},
 		{'a','b'},

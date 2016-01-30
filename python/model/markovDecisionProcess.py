@@ -16,9 +16,6 @@ class MarkovDecisionProcess:
         self.actions = dict(enumerate(A))
         self.inv_actions = {v:k for k,v in self.actions.iteritems()}
         # transitions
-        print 'T:',T
-        print 'states',self.states
-        print 'inv_states',self.inv_states
         self.transitions = {
             (self.inv_states[s1],self.inv_actions[a]) : 
             {self.inv_states[s2]:pr for s2,pr in d.iteritems()} 

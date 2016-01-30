@@ -16,10 +16,10 @@ def mdp2sta(mdp,filename):
 		FILE.write( str(i) + ':(' + str(s) + ')\n' )
 	FILE.close()
 
-def mdp2lab(mdp,filename):
+def mdp2lab(mdp,init,filename):
 	""" Export labels to .lab prism file """
 	with open(filename,'w') as FILE:
-		FILE.write("0=\"init\" 1=\"deadlock\"\n0: 0")
+		FILE.write('0="init" 1="deadlock"\n'+str(init)+': 0')
 	FILE.close()
 
 def mdp2tra(mdp,filename,bunch=100000):

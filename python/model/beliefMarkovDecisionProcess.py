@@ -27,6 +27,8 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 		self.pomdp = pomdp
 		# initial state
 		self.root = prior
+		# fringe
+		self.fringe = set()
 		# belief states
 		B = set()
 		# belief transition function
@@ -61,7 +63,8 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 					for i1,p1 in current.distr.iteritems():
 						sub_pr = 0.0
 						for i2,p2 in nxt.distr.iteritems():
-							if i2 in pomdp.transitionFunction[(i1,act)]:
+							if i2 in pomdp.transitionFunction[(i1,act)] and \
+								obs in pomdp.observationFunction[i2]:
 								sub_pr += pomdp.transitionFunction[(i1,act)][i2] \
 									* pomdp.observationFunction[i2][obs]
 						pr += p1 * sub_pr
@@ -87,6 +90,7 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 		# add last level from Q 
 		for b in Q.queue:
 			B.add(b)
+			self.fringe.add(b)
 
 		MarkovDecisionProcess.__init__(self,B,pomdp.actions.values(),T)
 
