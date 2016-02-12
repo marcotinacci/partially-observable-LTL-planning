@@ -160,20 +160,23 @@ def generateStates(rows, cols, robots):
 	return states
 
 if __name__ == '__main__':
-	P = robotArenaPomdp(4,4,2)
+	P = robotArenaPomdp(6,5,2)
 	# initial belief
 	prior = Distribution(set(P.states.keys()), lambda el,dom: \
 		Distribution.diracPfd(el,dom, \
 		P.inv_states[((1,0),frozenset({(0,2),(2,2)}))]))
 	# generate belief MDP
-	bmdp = BeliefMarkovDecisionProcess(P,4,prior)
+	print len(P.states), len(P.observations)
+	print '>>> bmdp generation'
+	bmdp = BeliefMarkovDecisionProcess(P,2,prior)
 	# compute initial, accepting and refusing states
 	accept = []	
 	for k,v in bmdp.states.iteritems():
-	if pomdp.inv_states['win'] in v.distr:
-		if v.distr[pomdp.inv_states['win']] > 0.85:
-			accept.append(k)
+		if pomdp.inv_states[((1,0),frozenset({(0,2),(2,2)}))] in v.distr:
+			if v.distr[pomdp.inv_states['win']] > 0.85:
+				accept.append(k)
 	# export to DOT
+	print '>>> export to dot'
 	e2d.export2dot(
 		bmdp,'bmdp','test.dot', [], [], 
 		[bmdp.inv_states[prior]],
