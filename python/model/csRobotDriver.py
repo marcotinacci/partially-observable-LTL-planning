@@ -15,7 +15,7 @@ import random
 
 # >>> code
 
-def simulation(pomdp, init, prior, gamma, it, height,width):
+def simulation(pomdp, init, prior, gamma, it, goalPos, levels,width):
    """
    Robot scenario simulation
       pomdp: model
@@ -23,38 +23,45 @@ def simulation(pomdp, init, prior, gamma, it, height,width):
       prior: initial belief state
       gamma: goal formula
       it: number of iterations
-      height: height of the arena
+      goalPos: goal positions
+      levels: height of the arena
       width: width of the arena
    """
-
    currentState = init
    currentBelief = prior
-   printArena(init,[],height,width)
-   #if currentState[0] in currentState[1:]:
-   #   cc[run,0] += 1     
+   print 'SIMULTATION START'
+   printArena(currentState,goalPos,levels,width)
    for i in range(it):
       print 'ITERATION',str(i)
+      #print currentBelief
       action = gamma(currentBelief)
+      print 'execute action',pomdp.actions[action]
       currentState = stepAction(pomdp, currentState, action)
-      currentBelief = beliefUpdate(pomdp,currentBelief,action,weighted_choice(pomdp.observationFunction[pomdp.inv_states[currentState]]))
-      printArena(currentState,[],height,width)
+      currentBelief = beliefUpdate(
+         pomdp,
+         currentBelief,
+         action,
+         weighted_choice(pomdp.observationFunction[pomdp.inv_states[currentState]])
+      )
+      printArena(currentState,goalPos,levels,width)
 
+   print 'SIMULATION END'
 
 
 # ======================
 # == SIMULATION UTILS ==
 # ======================
 
-def printArena(current,goalPos,height,width):
+def printArena(current,goalPos,levels,width):
    """
    Print the current state of the arena scenario
       current: current concrete state
       goalPos: goal positions
-      height: height of the arena
+      levels: height of the arena
       width: width of the arena
    """
    arena = ""
-   for l in range(height-1,-1,-1):
+   for l in range(levels-1,-1,-1):
       for w in range(width):
          if (l,w) == current[0]:
             arena += 'o'
@@ -77,7 +84,8 @@ def stepAction(pomdp,current,action):
    """
    return pomdp.states[
       weighted_choice(
-         pomdp.transitionFunction[(pomdp.inv_states[current],action)])
+         pomdp.transitionFunction[(pomdp.inv_states[current],action)]
+         )
       ]
 
 def stepObservation(pomdp,current):
@@ -96,6 +104,7 @@ def weighted_choice(choices):
          and probabilities as values (it must be sum 1)
       return: the chosen element
     """
+    # total = sum(w for c, w in choices) # total is 1
     r = random.uniform(0, 1)
     upto = 0
     for st,pr in choices.iteritems():
@@ -108,7 +117,7 @@ def weighted_choice(choices):
 # == MODEL ==
 # ===========
 
-def robotPomdp(height,width):
+def robotPomdp(levels,width,sight,goalPos):
    """
    Visual representation of the robot scenario, environmental robots 
    are represented as 'x' and can move only to the left or to the 
@@ -121,20 +130,20 @@ def robotPomdp(height,width):
 
    """
    # status of the main agent
-   s = [set(it.product(set(range(height)),set(range(width))))]
+   s = [set(it.product(set(range(levels)),set(range(width))))]
    # status of environmental robots
-   for l in range(height):
+   for l in range(1,levels-1):
       s.append(set(it.product([l],range(width))))
    # states
    S = set(it.product(*s))
 
    # actions
-   A = {'right','forward','left','backward'}
+   A = {'right','forward','left'}
 
    # observations
    #  0..sight-1 : environmental robots observations
    #  sight : goal observation
-   O = set(it.product({True,False},repeat=5))
+   O = set(it.product({True,False},repeat=sight+1))
 
    # define transition function
    T = dict()
@@ -146,23 +155,22 @@ def robotPomdp(height,width):
             continue
          T[(s,a)] = dict()
          for n in nextStates:
-            x = (mainRobotNext(s[0][0],s[0][1],a,height,width),) + n
-            T[(s,a)][x] = transitionProb(s,x,height,width)
+            x = (mainRobotNext(s[0][0],s[0][1],a,levels,width),) + n
+            T[(s,a)][x] = transitionProb(s,x,levels,width)
 
    # define observation function
    Z = dict()
+   #sees = lambda s0,sl: (sl[0]-s0[0] in range(3)) and (sl[1] == s0[1])
    for s in S:
-      # in place observation
-      obs = (s[0] in s[1:],)
-      # north observation
-      obs += ((s[0][0],s[0][0]+1) in s[1:],)
-      # east observation
-      obs += ((s[0][0]+1,s[0][0]) in s[1:],)
-      # south observation
-      obs += ((s[0][0],s[0][0]-1) in s[1:],)
-      # west observation
-      obs += ((s[0][0]-1,s[0][0]) in s[1:],)
+      obs = tuple( (r,s[0][1]) in s[1:] for r in range(s[0][0],s[0][0]+sight))
+      # left observation
+      #obs += ((s[0][0]+1,s[0][1]-1) in s[1:],)
+      # right observation
+      #obs += ((s[0][0]+1,s[0][1]+1) in s[1:],)
+      # goal observation
+      obs += (s[0] in goalPos,)
       Z[s] = { obs : 1 }
+
    return PartiallyObservableMarkovDecisionProcess(S, A, T, O, Z)
 
 def transitionProb(s1,s2,levels,width):
@@ -174,15 +182,11 @@ def transitionProb(s1,s2,levels,width):
 
 def mainRobotNext(r,c,a,levels,width):
    if a == "left":
-      return (r,max(c-1,0))
+      return (min(r+1,levels-1),max(c-1,0))
    elif a == "right":
-      return (r,min(width-1,c+1))
+      return (min(r+1,levels-1),min(width-1,c+1))
    elif a == "forward":
       return (min(r+1,levels-1),c)
-   elif a == "backward":
-      return (max(r-1,0),c)
-   elif a == "stand":
-      return (r,c)
    raise Exception('Unknown action')
 
 def envRobotDistr(r,c,width):
@@ -194,99 +198,54 @@ def envRobotDistr(r,c,width):
       return {(r,c) : 1/3., (r,c-1) : 1/3., (r,c+1) : 1/3.}
 
 if __name__ == '__main__':
-   random.seed(1)
-   height = 4
+   levels = 4
    width = 4
-   initPos = (1,1)
-   concreteInitPos = (initPos,(0,0),(1,2),(2,1),(3,3))
+   sight = 3
+   goalPos = [(3,0),(3,1),(3,2),(3,3)]
+   initPos = (0,1)
+   concreteInitPos = (initPos,(1,2),(2,1))
    iterations = 10
    # partially observable model
-   pomdp = robotPomdp(height, width)
+   pomdp = robotPomdp(levels, width, sight, goalPos)
    # initial states
-   init = set(map(lambda s: pomdp.inv_states[s], filter(lambda s: s[0] == initPos, pomdp.states.values())))
+   init = set(map(lambda s: pomdp.inv_states[s] ,filter(lambda s: s[0] == initPos, pomdp.states.values())))
    #init = filter(lambda s: s[0] == initPos, pomdp.states.values())
    # initial belief
    prior = Distribution(set(pomdp.states.keys()),\
       lambda el,dom: Distribution.restrictedUniformPdf(el,dom,init))
-   #prior = Distribution(set(pomdp.states.keys()), Distribution.uniformPdf)
    # prior belief updated to the first observation
    #prior = beliefUpdateObservation(pomdp,prior,pomdp.inv_observations[(False,False,False)])
-   
+
    # generate explicit MDP
    print 'emdp construction'
    emdp = ExplicitMarkovDecisionProcess(pomdp,prior)
    print 'end (emdp empty)'
 
-   # observation classes
-   collision = filter(lambda o: o[0], pomdp.observations.values())
-   notCollision = filter(lambda o: not o[0], pomdp.observations.values())
-   sensing = filter(lambda o: reduce(lambda a,b: a or b, o), pomdp.observations.values())
+   goalObs = filter(lambda o: o[-1] == True, pomdp.observations.values())
+   collision = filter(lambda o: o[0] == True, pomdp.observations.values())
+   notCollision = filter(lambda o: o[0] == False, pomdp.observations.values())
    anyObs = filter(lambda o: True, pomdp.observations.values())
-   sensAndNotCollide = [o for o in pomdp.observations.values() if (o in sensing and o in notCollision)]
 
    # MAX PMIN ( X notCollision )
-   #gamma = \
-   #   lambda b : MaxGoalProb(emdp, \
-   #      lambda b1,o1 : PminNext(emdp, \
-   #         lambda b2,o2 : PObs(emdp,notCollision,b2,o2), \
-   #         b1,o1),
-   #      b)
-
-   # MAX P ( notCollision )
-   #gamma = lambda b : MaxGoalProb(emdp, lambda b1,o1 : PObs(emdp,notCollision,b1,o1),b)
-
-   # MIN P ( collision )
-   #gamma = lambda b : MinGoalProb(emdp, lambda b1,o1 : PObs(emdp,collision,b1,o1),b)
-
-   # MIN PMAX ( X collision )
-   #gamma = \
-   #   lambda b : MinGoalProb(emdp, \
-   #      lambda b1,o1 : PmaxNext(emdp, \
-   #         lambda b2,o2 : PObs(emdp,collision,b2,o2), \
-   #         b1,o1),
-   #      b)
-
-   # MAX P ( sense and not collide )
-   #gamma = lambda b : MaxGoalProb(emdp, \
-   #   lambda b1,o1 : PObs(emdp,sensAndNotCollide,b1,o1),b)
-
-   # MAX PMIN ( sense and not collide U<=1 not collide )
-   #steps = 1
-   #gamma = \
-   #   lambda b : MaxGoalProb(emdp, \
-   #      lambda b1, o1 : PmaxUntil(emdp, \
-   #         lambda b2, o2 : PObs(emdp, sensAndNotCollide, b2, o2), \
-   #         lambda b3, o3 : PObs(emdp, notCollision, b3, o3), \
-   #         steps, b1, o1),\
-   #      b)
-
-   # MAX PMIN ( X sense and not collision )
-   g1 = \
+   gamma = \
       lambda b : MaxGoalProb(emdp, \
          lambda b1,o1 : PminNext(emdp, \
-            lambda b2,o2 : PObs(emdp,sensAndNotCollide,b2,o2), \
-            b1,o1),
-         b)
-
-   # MAX PMIN ( X sense and not collision )
-   g2 = \
-      lambda b : MaxGoalProb(emdp, \
-         lambda b1,o1 : PmaxNext(emdp, \
-            lambda b2,o2 : PObs(emdp,sensAndNotCollide,b2,o2), \
+            lambda b2,o2 : PObs(emdp,notCollision,b2,o2), \
             b1,o1),
          b)
 
    # MAX PMIN ( * U<=n goalObs )
-   #steps = 3
-   #gamma = \
-   #   lambda b : MaxGoalProb(emdp, \
-   #      lambda b1, o1 : PmaxUntil(emdp, \
-   #         lambda b2, o2 : PObs(emdp, notCollision, b2, o2), \
-   #         lambda b3, o3 : PObs(emdp, goalObs, b3, o3), \
-   #         steps, b1, o1),\
-   #      b)
+   steps = 4
+   gamma = \
+      lambda b : MaxGoalProb(emdp, \
+         lambda b1, o1 : PminUntil(emdp, \
+            lambda b2, o2 : PObs(emdp, notCollision, b2, o2), \
+            lambda b3, o3 : PObs(emdp, goalObs, b3, o3), \
+            steps, b1, o1),\
+         b)
 
-   simulation(pomdp, concreteInitPos, prior, g1, iterations, height, width)
+
+   simulation(pomdp,concreteInitPos,prior,gamma,iterations,goalPos,levels,width)
 
 
 #  # model checking

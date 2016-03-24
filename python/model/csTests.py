@@ -29,12 +29,12 @@ def tigerPomdp():
 			('lose','ol') : { 'lose' : 1 },
 			('lose','or') : { 'lose' : 1 }
 		},
-		{'hl','hr'},
+		{'hl','hr','W','L'},
 		{
 			'tl' : {'hl' : 0.85, 'hr' : 0.15},
 			'tr' : {'hl' : 0.15, 'hr' : 0.85},
-			'win' : {'hl' : 0.5, 'hr' : 0.5},
-			'lose' : {'hl' : 0.5, 'hr' : 0.5}
+			'win' : {'W' : 1.0},
+			'lose' : {'L' : 1.0}
 		}
 	)
 

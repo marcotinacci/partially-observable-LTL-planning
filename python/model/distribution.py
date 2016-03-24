@@ -20,13 +20,13 @@ class Distribution:
 			:param domain: domain set of the distribution
 			:param pdf: probability density function 
 		"""
-		self.support = dict(enumerate(domain))
+		self.support = domain#dict(enumerate(domain))
 		self.distr = dict()
-		for i,e in self.support.iteritems():
-			pr = pdf(e,domain)
+		for i in self.support:
+			pr = pdf(i,domain)
 			# do not insert elements with null probability
 			if float(pr) != 0.:
-				self.distr[i] = pdf(e,domain)
+				self.distr[i] = pr
 
 #	def __checkSumOne(self):
 #		""" Check if the distribution has sum 1 """
@@ -70,7 +70,7 @@ class Distribution:
 		over a subset of the domain 
 		"""
 		if not subset <= domain:
-			raise Exception('The restriction set is not a subset of the domain')
+			raise Exception('The restriction set is not a subset of the domain',subset,domain)
 		return 1./len(subset) if e in subset else 0.
 
 	@staticmethod
@@ -92,18 +92,17 @@ class Distribution:
 
 	def __str__(self):
 		ret = "id, element, probability\n"
-		for i,e in self.support.iteritems():
+		for i in self.support:
 			if i in self.distr:
-				ret = ret + str(i) + ', ' + str(e) + ', ' + str(self.distr[i]) + '\n'
+				ret = ret + str(i) + ', ' + str(self.distr[i]) + '\n'
 		return ret
 
 # >>> main test
 
 if __name__ == '__main__':
-	dom = {'a','b','c','d'}
-	print dom
-	distr = Distribution(dom,Distribution.uniformPdf)
-	#distr = Distribution(dom,lambda el,dom: Distribution.restrictedUniformPdf(el,dom,{'a','b'}))
+	supp = {0:'a',1:'b',2:'c',3:'d'}
+	#distr = Distribution(dom.keys(),Distribution.uniformPdf)
+	distr = Distribution(set(supp.keys()),lambda el,dom: Distribution.restrictedUniformPdf(el,dom,{0,1}))
 	#distr = Distribution(dom,lambda el,dom: Distribution.diracPfd(el,dom,'b'))
 	print distr
 

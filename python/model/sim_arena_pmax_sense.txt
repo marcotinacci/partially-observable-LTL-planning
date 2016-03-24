@@ -1,0 +1,111 @@
+MAX PMAX ( X sense and not collide )
+SEED = 1
+
+emdp construction
+end (emdp empty)
+...x
+.x..
+.ox.
+x...
+
+ITERATION 0
+action forward prob 0.700586524496
+action backward prob 0.613726406695
+action right prob 0.687733663622
+action left prob 0.718408364058
+...x
+.x..
+o..x
+.x..
+
+ITERATION 1
+action forward prob 0.711254280699
+action backward prob 0.681664737654
+action right prob 0.731858710562
+action left prob 0.720820893515
+..x.
+..x.
+.o.x
+.x..
+
+ITERATION 2
+action forward prob 0.729884997316
+action backward prob 0.657051282051
+action right prob 0.694498444405
+action left prob 0.757118581931
+...x
+.x..
+o.x.
+x...
+
+ITERATION 3
+action forward prob 0.746561525353
+action backward prob 0.676215277778
+action right prob 0.677160493827
+action left prob 0.724211248285
+..x.
+o.x.
+...x
+x...
+
+ITERATION 4
+action forward prob 0.724211248285
+action backward prob 0.782971822131
+action right prob 0.751993312757
+action left prob 0.755551268861
+.x..
+.x..
+o..x
+.x..
+
+ITERATION 5
+action forward prob 0.746244855967
+action backward prob 0.711689814815
+action right prob 0.746419753086
+action left prob 0.739286694102
+..x.
+..x.
+.o.x
+..x.
+
+ITERATION 6
+action forward prob 0.719987291213
+action backward prob 0.637019230769
+action right prob 0.680324474908
+action left prob 0.74125701459
+.x..
+.x..
+o.x.
+...x
+
+ITERATION 7
+action forward prob 0.7415260631
+action backward prob 0.66691468254
+action right prob 0.667901234568
+action left prob 0.717195767196
+..x.
+o.x.
+...x
+..x.
+
+ITERATION 8
+action forward prob 0.724211248285
+action backward prob 0.780617202299
+action right prob 0.7511941505
+action left prob 0.752088232412
+.x..
+.x..
+o..x
+.x..
+
+ITERATION 9
+action forward prob 0.746244855967
+action backward prob 0.711689814815
+action right prob 0.746419753086
+action left prob 0.739286694102
+..x.
+..x.
+.o.x
+..x.
+
+[Finished in 202.7s]

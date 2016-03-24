@@ -43,7 +43,7 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 			B.add(current)
 			for act in pomdp.actions:
 				for obs in pomdp.observations:
-					nxt = self.__beliefUpdate(pomdp,current,act,obs)
+					nxt = self.beliefUpdate(pomdp,current,act,obs)
 					# find-the-copy function
 					find = lambda lst, el : \
 						reduce(lambda a,b: a if a != None else b, \
@@ -95,7 +95,7 @@ class BeliefMarkovDecisionProcess(MarkovDecisionProcess):
 		MarkovDecisionProcess.__init__(self,B,pomdp.actions.values(),T)
 
 	@staticmethod
-	def __beliefUpdate(pomdp, belief, action, observation):
+	def beliefUpdate(pomdp, belief, action, observation):
 		"""
 		Compute the belief update, the time complexity of this function
 		is quadratic on the size of the number of states of the pomdp

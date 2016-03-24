@@ -17,7 +17,7 @@ def counter(ci,ei,dim,countType):
             map(lambda x: 1 if ci in rob.around(x,dim) else 0,ei))
     else:
         raise ValueError("countType value is not valid")
-
+ 
 def inverseObservation(O):
     return { obs:k for k,obs in enumerate(O)}
 
